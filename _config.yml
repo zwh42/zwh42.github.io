@@ -1,7 +1,7 @@
 title: Your Name
 description: Personal website and blog
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://zwh42.github.io" # GitHub Pages URL
 
 # Build settings
 theme: jekyll-theme-slate
