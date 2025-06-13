@@ -21,4 +21,7 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
-*.swo 
+*.swo
+
+# Backup files
+bak_* 
