@@ -1,14 +1,71 @@
-title: Your Name
-description: Personal website and blog
+title: Zhaowenhao's Homepage
+email: your-email@example.com
+description: >- 
+  Welcome to my personal homepage.
 baseurl: "" # the subpath of your site, e.g. /blog
-url: "https://zwh42.github.io" # GitHub Pages URL
+url: "https://zwh42.github.io" # the base hostname & protocol for your site, e.g. http://example.com
+
+# Site Settings
+locale: "en-US"
+search: true
 
 # Build settings
-theme: jekyll-theme-slate
-plugins:
-  - jekyll-feed
-  - jekyll-seo-tag
-  - jekyll-sitemap
+markdown: kramdown
+theme: minimal-mistakes-jekyll
+minimal_mistakes_skin: "default" # "air", "aqua", "contrast", "dark", "dirt", "neon", "mint", "plum", "sunrise"
+
+# Collections
+collections:
+  pages:
+    output: true
+    permalink: /:collection/:path/
+
+# Site Author
+author:
+  name: "Zhaowenhao"
+  bio: "A passionate developer and researcher"
+  location: "Earth"
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/zwh42"
+    - label: "LinkedIn"
+      icon: "fab fa-fw fa-linkedin"
+      url: "https://www.linkedin.com/in/zhaowenhao/"
+    - label: "Email"
+      icon: "fas fa-fw fa-envelope-square"
+      url: "mailto:your-email@example.com"
+
+# Site Footer
+footer:
+  links:
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/zwh42"
+    - label: "LinkedIn"
+      icon: "fab fa-fw fa-linkedin"
+      url: "https://www.linkedin.com/in/zhaowenhao/"
+
+# Defaults
+defaults:
+  # _posts
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: single
+      author_profile: true
+      read_time: true
+      comments: false
+      share: true
+      related: true
+  # _pages
+  - scope:
+      path: "_pages"
+      type: pages
+    values:
+      layout: single
+      author_profile: true
 
 # Exclude from processing
 exclude:
@@ -17,23 +74,7 @@ exclude:
   - node_modules
   - vendor
   - .gitignore
-  - .git
   - .github
-
-# Collections
-collections:
-  posts:
-    output: true
-    permalink: /posts/:year/:month/:day/:title/
-
-# Default front matter
-defaults:
-  - scope:
-      path: ""
-      type: "posts"
-    values:
-      layout: "post"
-  - scope:
-      path: ""
-    values:
-      layout: "default"
+  - .devcontainer
+  - Dockerfile
+  - docker-compose.yaml 

@@ -1,18 +1,36 @@
 ---
 layout: home
-title: Welcome
+author_profile: true
 ---
 
-# Welcome to My Website
+# Welcome to My Homepage
 
-This is my personal website and blog. Here you'll find my thoughts, projects, and experiences.
-
-## Recent Posts
-
-{% for post in site.posts limit:5 %}
-- [{{ post.title }}]({{ post.url | relative_url }}) - {{ post.date | date: "%B %d, %Y" }}
-{% endfor %}
+I am a passionate developer and researcher. This is my personal website where I share my thoughts and projects.
 
 ## About Me
 
-I'm passionate about technology and sharing knowledge. This site serves as a platform for me to document my journey and share insights with others.
+I am a developer with a passion for creating innovative solutions. My interests include [your interests here].
+
+## Recent Projects
+
+Here are some of my recent projects:
+
+1. **Project One**
+   - Description of project one
+   - Technologies used
+   - [Link to project](https://github.com/yourusername/project-one)
+
+2. **Project Two**
+   - Description of project two
+   - Technologies used
+   - [Link to project](https://github.com/yourusername/project-two)
+
+## Skills
+
+- Programming Languages: [List your programming languages]
+- Frameworks: [List your frameworks]
+- Tools: [List your tools]
+
+## Contact
+
+Feel free to reach out to me at [your-email@example.com](mailto:your-email@example.com) or connect with me on [GitHub](https://github.com/zwh42) 
