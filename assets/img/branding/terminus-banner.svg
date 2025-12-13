@@ -1,0 +1,110 @@
+<svg width="1200" height="350" viewBox="0 0 1200 350" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Terminus Log Banner</title>
+  <defs>
+    <radialGradient id="space-grad-banner" cx="50%" cy="50%" r="80%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#1a237e" />
+      <stop offset="40%" stop-color="#0d001a" />
+      <stop offset="100%" stop-color="#000000" />
+    </radialGradient>
+
+    <pattern id="tech-grid-banner" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#00e5ff" stroke-width="0.5" opacity="0.15"/>
+    </pattern>
+
+    <pattern id="scanlines" width="2" height="3" patternUnits="userSpaceOnUse">
+      <rect width="2" height="1" fill="#000000" opacity="0.3"/>
+    </pattern>
+
+    <filter id="neon-glow-banner" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3.5" result="coloredBlur" />
+      <feMerge>
+        <feMergeNode in="coloredBlur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <filter id="glitch-shift-banner">
+      <feOffset in="SourceGraphic" dx="2" dy="0" result="shiftRed"/>
+      <feOffset in="SourceGraphic" dx="-2" dy="0" result="shiftCyan"/>
+      <feColorMatrix in="shiftRed" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.7 0" result="redText"/>
+      <feColorMatrix in="shiftCyan" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.7 0" result="cyanText"/>
+      <feMerge>
+        <feMergeNode in="redText"/>
+        <feMergeNode in="cyanText"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&display=swap');
+        .sci-fi-text-banner {
+            font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="100%" height="100%" fill="url(#space-grad-banner)"/>
+
+  <!-- Tech grid overlay -->
+  <rect width="150%" height="150%" fill="url(#tech-grid-banner)" transform="translate(-200, -100) skewX(-20)" opacity="0.6"/>
+
+  <!-- Grid lines -->
+  <g stroke="#00e5ff" stroke-width="1" opacity="0.3" filter="url(#neon-glow-banner)">
+      <line x1="0" y1="175" x2="1200" y2="175" stroke-dasharray="5,10,20,5"/>
+      <line x1="100" y1="0" x2="100" y2="350" stroke-dasharray="10,30"/>
+      <line x1="1100" y1="0" x2="1100" y2="350" stroke-dasharray="10,30"/>
+  </g>
+
+  <!-- Circuit nodes -->
+  <g stroke="#00e5ff" stroke-width="1.5" opacity="0.4" fill="none">
+    <circle cx="150" cy="80" r="30"/>
+    <circle cx="1050" cy="270" r="30"/>
+    <circle cx="150" cy="270" r="25"/>
+    <circle cx="1050" cy="80" r="25"/>
+
+    <!-- Connecting paths -->
+    <path d="M 150 80 L 150 270 M 1050 80 L 1050 270" stroke-dasharray="5,5"/>
+    <path d="M 150 175 L 600 175 L 1050 175" stroke-dasharray="10,20" opacity="0.5"/>
+  </g>
+
+  <!-- Main title -->
+  <g transform="translate(600, 175)" text-anchor="middle" dominant-baseline="middle" class="sci-fi-text-banner">
+    <text x="0" y="-40" fill="#ffffff" opacity="0.8" filter="url(#glitch-shift-banner)" font-size="54">
+      TERMINUS LOG
+    </text>
+    <text x="0" y="-40" fill="#00e5ff" filter="url(#neon-glow-banner)" font-size="54">
+      TERMINUS <tspan fill="#ff0055">LOG</tspan>
+    </text>
+
+    <!-- Subtitle -->
+    <text x="0" y="30" fill="#00e5ff" opacity="0.7" font-size="32" filter="url(#neon-glow-banner)">
+      端点星日志
+    </text>
+  </g>
+
+  <!-- Tech details -->
+  <g fill="#00e5ff" opacity="0.5">
+    <!-- Top indicators -->
+    <rect x="595" y="20" width="3" height="10"/>
+    <rect x="602" y="20" width="3" height="10"/>
+
+    <!-- Bottom indicators -->
+    <rect x="595" y="320" width="3" height="10"/>
+    <rect x="602" y="320" width="3" height="10"/>
+
+    <!-- Side nodes -->
+    <circle cx="50" cy="175" r="4"/>
+    <circle cx="1150" cy="175" r="4"/>
+  </g>
+
+  <!-- Scanlines effect -->
+  <rect width="100%" height="100%" fill="url(#scanlines)" pointer-events="none"/>
+
+  <!-- Border frame -->
+  <rect x="10" y="10" width="1180" height="330" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0.3" stroke-dasharray="100, 50"/>
+
+</svg>

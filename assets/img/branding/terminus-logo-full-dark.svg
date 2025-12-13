@@ -1,0 +1,85 @@
+<svg width="1200" height="120" viewBox="0 0 1200 120" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <title>Terminus Log Logo Dark</title>
+  <defs>
+    <radialGradient id="space-grad-dark" cx="50%" cy="50%" r="80%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#0a0a0a" />
+      <stop offset="60%" stop-color="#000000" />
+      <stop offset="100%" stop-color="#000000" />
+    </radialGradient>
+
+    <pattern id="tech-grid-dark" width="30" height="30" patternUnits="userSpaceOnUse">
+      <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#40e0d0" stroke-width="0.5" opacity="0.2"/>
+    </pattern>
+
+    <filter id="neon-glow-dark" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
+      <feMerge>
+        <feMergeNode in="coloredBlur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+
+    <filter id="glitch-shift-dark">
+      <feOffset in="SourceGraphic" dx="1.5" dy="0" result="shiftRed"/>
+      <feOffset in="SourceGraphic" dx="-1.5" dy="0" result="shiftCyan"/>
+      <feColorMatrix in="shiftRed" type="matrix" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.6 0" result="redText"/>
+      <feColorMatrix in="shiftCyan" type="matrix" values="0 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.6 0" result="cyanText"/>
+      <feMerge>
+        <feMergeNode in="redText"/>
+        <feMergeNode in="cyanText"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&display=swap');
+        .sci-fi-text-dark {
+            font-family: 'JetBrains Mono', 'Courier New', Courier, monospace;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+    </style>
+  </defs>
+
+  <rect width="100%" height="100%" fill="#000000"/>
+  <rect width="100%" height="100%" fill="url(#space-grad-dark)"/>
+  <rect width="100%" height="100%" fill="url(#tech-grid-dark)" opacity="0.5"/>
+
+  <!-- Circuit elements -->
+  <g stroke="#40e0d0" stroke-width="1.2" opacity="0.3" fill="none">
+    <circle cx="100" cy="60" r="25"/>
+    <circle cx="1100" cy="60" r="25"/>
+    <path d="M 75 60 L 125 60 M 100 35 L 100 85"/>
+    <path d="M 1075 60 L 1125 60 M 1100 35 L 1100 85"/>
+
+    <!-- Additional circuits -->
+    <path d="M 100 60 L 200 60" stroke-dasharray="2,3"/>
+    <path d="M 1000 60 L 1100 60" stroke-dasharray="2,3"/>
+  </g>
+
+  <!-- Main text -->
+  <g transform="translate(600, 60)" text-anchor="middle" dominant-baseline="middle" class="sci-fi-text-dark">
+    <text x="0" y="0" fill="#ffffff" opacity="0.4" filter="url(#glitch-shift-dark)" font-size="28">
+      TERMINUS LOG
+    </text>
+    <text x="0" y="0" fill="#40e0d0" filter="url(#neon-glow-dark)" font-size="28">
+      TERMINUS <tspan fill="#ff4080">LOG</tspan>
+    </text>
+  </g>
+
+  <!-- Tech details -->
+  <g fill="#40e0d0" opacity="0.6">
+    <rect x="495" y="95" width="2" height="5"/>
+    <rect x="505" y="95" width="2" height="5"/>
+    <rect x="695" y="95" width="2" height="5"/>
+    <rect x="705" y="95" width="2" height="5"/>
+  </g>
+
+  <!-- Additional tech lines -->
+  <g stroke="#40e0d0" stroke-width="0.5" opacity="0.4">
+    <line x1="450" y1="60" x2="480" y2="60" stroke-dasharray="3,5"/>
+    <line x1="720" y1="60" x2="750" y2="60" stroke-dasharray="3,5"/>
+  </g>
+
+</svg>

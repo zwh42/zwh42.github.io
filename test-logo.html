@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Logo Test</title>
+</head>
+<body>
+    <h1>Logo Test Page</h1>
+    <p>Testing SVG logos:</p>
+
+    <h2>Simple Logo:</h2>
+    <img src="./assets/img/branding/terminus-logo-simple.svg" alt="Simple Logo" style="height: 60px;">
+
+    <h2>Direct SVG embed:</h2>
+    <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="120" viewBox="0 0 1200 120">
+      <!-- Background -->
+      <rect width="1200" height="120" fill="#000511"/>
+
+      <!-- Main text -->
+      <text x="600" y="75" text-anchor="middle" font-family="Arial, sans-serif" font-size="42" font-weight="bold" fill="#00ccff">
+        TERMINUS <tspan fill="#ff3366">LOG</tspan>
+      </text>
+    </svg>
+
+    <h2>Inline in IMG tag with absolute path:</h2>
+    <img src="/assets/img/branding/terminus-logo-simple.svg" alt="Simple Logo Absolute" style="height: 60px;">
+</body>
+</html>

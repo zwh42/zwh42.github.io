@@ -1,0 +1,65 @@
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="avatar-clip">
+      <rect x="0" y="0" width="400" height="400" rx="50" ry="50"/>
+    </clipPath>
+    
+    <radialGradient id="bg-gradient" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#2C3E50" />
+      <stop offset="100%" stop-color="#1A2530" />
+    </radialGradient>
+    
+    <linearGradient id="marvin-head-grad" x1="200" y1="80" x2="200" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#E0E6ED"/>
+      <stop offset="0.5" stop-color="#AAB7C4"/>
+      <stop offset="1" stop-color="#788B9E"/>
+    </linearGradient>
+
+    <linearGradient id="eye-reflection" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.4)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </linearGradient>
+
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+          <feMergeNode in="coloredBlur"/>
+          <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g clip-path="url(#avatar-clip)">
+    <rect width="400" height="400" fill="url(#bg-gradient)"/>
+    
+    <g stroke="#4FD1C5" stroke-width="2" opacity="0.2" filter="url(#glow)">
+        <path d="M0 50 H400 M0 150 H400 M0 250 H400 M0 350 H400"/>
+        <path d="M50 0 V400 M150 0 V400 M250 0 V400 M350 0 V400"/>
+        <circle cx="50" cy="50" r="5" fill="#4FD1C5"/>
+        <circle cx="350" cy="350" r="5" fill="#4FD1C5"/>
+        <circle cx="250" cy="150" r="8" fill="none"/>
+        <text x="10" y="390" fill="#4FD1C5" font-family="monospace" font-size="10">01010011 01001001 01000111 01001000</text>
+    </g>
+
+    <g transform="translate(0, 20)"> <path d="M100 350 C100 300, 300 300, 300 350 L300 450 L100 450 Z" fill="#788B9E"/>
+
+        <ellipse cx="200" cy="200" rx="140" ry="130" fill="url(#marvin-head-grad)"/>
+        <ellipse cx="200" cy="195" rx="135" ry="125" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="3"/>
+
+        <g transform="translate(200, 190)">
+            <g transform="rotate(-15, -70, 0)">
+                <ellipse cx="-70" cy="0" rx="45" ry="55" fill="#111827" stroke="#2C3E50" stroke-width="4"/>
+                 <path d="M-115 -10 Q-70 40 -25 -10" stroke="#788B9E" stroke-width="5" fill="none" opacity="0.6"/>
+                <ellipse cx="-85" cy="-20" rx="15" ry="10" fill="url(#eye-reflection)" transform="rotate(20)"/>
+            </g>
+            <g transform="rotate(15, 70, 0)">
+                <ellipse cx="70" cy="0" rx="45" ry="55" fill="#111827" stroke="#2C3E50" stroke-width="4"/>
+                <path d="M25 -10 Q70 40 115 -10" stroke="#788B9E" stroke-width="5" fill="none" opacity="0.6"/>
+                <ellipse cx="55" cy="-20" rx="15" ry="10" fill="url(#eye-reflection)" transform="rotate(20)"/>
+            </g>
+        </g>
+
+        <path d="M185 300 Q200 305 215 300" stroke="#2C3E50" stroke-width="3" fill="none" opacity="0.5"/>
+    </g>
+  </g>
+</svg>
