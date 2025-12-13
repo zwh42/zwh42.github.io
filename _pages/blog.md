@@ -1,7 +1,7 @@
 ---
 title: "Blog"
+layout: menu-page
 permalink: /blog/
-author_profile: true
 ---
 
 ## Blog Posts

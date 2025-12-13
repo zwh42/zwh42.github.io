@@ -1,8 +1,7 @@
 ---
 title: "Portfolio"
+layout: menu-page
 permalink: /portfolio/
-layout: single
-author_profile: true
 ---
 
 ## My Projects

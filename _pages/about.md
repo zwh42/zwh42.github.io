@@ -1,5 +1,6 @@
 ---
 title: About Me
+layout: menu-page
 permalink: /about/
 ---
 

@@ -1,15 +1,25 @@
 ---
-title: "Welcome to my github page"
+layout: post
+read_time: true
+show_date: true
+title: "Welcome to my GitHub Page"
 date: 2025-06-14
-categories:
-  - blog
-tags:
-  - OPC
-  - optimization
-  - research
+img: posts/welcome.jpg
+tags: [welcome, github, blog]
+author: Zhaowenhao
+description: "Welcome to my personal homepage where I'll share my projects and thoughts."
 ---
 
-# 欢迎来到我的主页
+# 欢迎来到我的主页 | Welcome to My Homepage
 
-vibe coding初体验，这个github pages完全是使用cursor生成的。
-后续会在这里写一些不完全由AI生成的东西。
+This is my first post on this GitHub Pages site. This page was initially created using AI assistance (Cursor), but I plan to share more content here about my projects and thoughts on technology, semiconductor manufacturing, and computational lithography.
+
+## What to Expect
+
+In this space, I'll be writing about:
+- My experiences in computational lithography
+- Algorithm development and optimization
+- Machine learning applications in semiconductor manufacturing
+- Thoughts on technology trends and innovations
+
+Stay tuned for more content!
