@@ -1,6 +1,5 @@
 ---
-layout: home
-author_profile: true
+layout: default
 ---
 
 # Welcome to My Homepage
