@@ -2,6 +2,9 @@
 @media only screen and (max-width: 768px) {
   .main-header {
     .logo {
+      img.logo {
+        height: 50px;
+      }
       a {
         font-size: 24px;
       }
@@ -87,6 +90,9 @@
 
   .main-header {
     .logo {
+      img.logo {
+        height: 45px;
+      }
       a {
         font-size: 21px;
       }

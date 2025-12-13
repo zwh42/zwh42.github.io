@@ -4,9 +4,9 @@ read_time: true
 show_date: true
 title: "Welcome to my GitHub Page"
 date: 2025-06-14
-img: posts/welcome.jpg
+
 tags: [welcome, github, blog]
-author: Zhaowenhao
+author: wenhao
 description: "Welcome to my personal homepage where I'll share my projects and thoughts."
 ---
 

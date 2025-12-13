@@ -12,14 +12,34 @@
   .logo {
     width: 50%;
     text-align: center;
+
+    img.logo {
+      height: 80px;
+      width: auto;
+      max-width: 100%;
+      object-fit: contain;
+      transition: all 0.3s ease;
+
+      &:hover {
+        opacity: 0.8;
+        transform: scale(1.02);
+      }
+    }
+
     a {
       text-decoration: none;
       text-transform: uppercase;
       font-size: 27px;
       font-weight: 300;
       color: $dark-purple;
+      display: block;
     }
   }
+}
+
+/* Dark mode logo */
+html[data-theme="dark"] .main-header .logo img.logo {
+  content: url("/assets/img/branding/terminus-logo-full-dark.svg");
 }
 
 .main-nav {
