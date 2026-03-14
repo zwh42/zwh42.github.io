@@ -1,6 +1,13 @@
 <section class="comment-area">
     <div class="comment-wrapper">
-        {% if site.comments and site.comments_opts.comments_curtain %}
+        {% assign comments_ready = false %}
+        {% if site.comments == 'utteranc' and site.comments_opts.repo %}
+            {% assign comments_ready = true %}
+        {% elsif site.comments == 'disqus' and site.comments_opts.discus_identifier %}
+            {% assign comments_ready = true %}
+        {% endif %}
+
+        {% if comments_ready and site.comments_opts.comments_curtain %}
         <div class="row" id="comment-curtain">
             <div class="col-lg-8 col-sm-10 mr-auto ml-auto">
                 <h2 class="page-subtitle">Comments</h2>

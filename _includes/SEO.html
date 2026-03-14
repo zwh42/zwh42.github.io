@@ -1,53 +1,63 @@
 {% assign words = page.content | strip_html | number_of_words %}
+{% assign seo_title = page.title | default: site.title %}
+{% assign seo_description = page.description | default: site.description %}
+{% assign seo_tags = page.tags | join: ", " %}
+{% assign seo_date = page.date | default: site.time %}
+{% assign seo_author = page.author | default: site.author %}
+{% assign seo_image_name = page.img | default: site.default_post_image %}
+{% capture seo_image_path %}/assets/img/{{ seo_image_name }}{% endcapture %}
+{% assign seo_image = seo_image_path | absolute_url %}
+
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "BlogPosting",
   "mainEntityOfPage": {
     "@type": "WebPage",
-    "@id": "{{ site.url }}"},
-  "headline": "{% if page.title %}{{page.title}}{% else %}{{site.title}}{% endif %}",
-  "abstract": "{{ page.description }}",
-    "keywords": "{% for tag in page.tags %}{{tag}}{% if forloop.last == false %}, {% endif %}{% endfor %}",
-    "wordcount": "{{ words }}",
-    "image": ["{{ site.url }}/assets/img{{ page.img }}"],
-  "datePublished": "{{ page.date }}",
-  "dateModified": "{{ page.date }}",
+    "@id": "{{ site.url }}"
+  },
+  "headline": "{{ seo_title }}",
+  "abstract": "{{ seo_description }}",
+  "keywords": "{{ seo_tags }}",
+  "wordCount": "{{ words }}",
+  "image": ["{{ seo_image }}"],
+  "datePublished": "{{ seo_date | date_to_xmlschema }}",
+  "dateModified": "{{ page.last_modified_at | default: seo_date | date_to_xmlschema }}",
   "author": {
     "@type": "Person",
-    "name": "{{ page.author }}"},
+    "name": "{{ seo_author }}"
+  },
   "publisher": {
-    "@type":  "Organization",
+    "@type": "Organization",
     "logo": {
-        "@type": "ImageObject",
-        "encodingFormat": "image/png",
-        "contentUrl": "{{ site.url }}{{ site.logo-icon-SEO }}",
-        "url": "{{ site.url }}{{ site.logo-icon-SEO }}"},
-    "name" : "{{ site.title }}"}
+      "@type": "ImageObject",
+      "encodingFormat": "image/png",
+      "contentUrl": "{{ site.url }}{{ site.logo-icon-SEO }}",
+      "url": "{{ site.url }}{{ site.logo-icon-SEO }}"
+    },
+    "name": "{{ site.title }}"
+  }
 }
 </script>
-<!-- Open Graph data -->
-<meta property="og:url" content="{{ site.url }}{{ page.url }}"/>
+<meta property="og:url" content="{{ page.url | absolute_url }}"/>
 <meta property="og:type" content="article"/>
-<meta property="og:title" content="{% if page.title %}{{page.title}}{% else %}{{site.title}}{% endif %}"/>
-<meta property="og:description" content="{{ page.description }}"/>
-<meta property="og:image" content="{{ site.url }}/assets/img{{ page.img }}"/>
-<meta property="og:image:alt" content="{{page.title}}"/>
-<meta property="og:site_name" content="{{site.title}}" />
-<meta property="article:published_time" content="{{ page.date }}" />
-<meta property="article:modified_time" content="{{ page.date }}" />
-<meta property="article:tag" content="{% for tag in page.tags %}{{tag}}{% if forloop.last == false %}, {% endif %}{% endfor %}" />
+<meta property="og:title" content="{{ seo_title }}"/>
+<meta property="og:description" content="{{ seo_description }}"/>
+<meta property="og:image" content="{{ seo_image }}"/>
+<meta property="og:image:alt" content="{{ seo_title }}"/>
+<meta property="og:site_name" content="{{ site.title }}" />
+<meta property="article:published_time" content="{{ seo_date | date_to_xmlschema }}" />
+<meta property="article:modified_time" content="{{ page.last_modified_at | default: seo_date | date_to_xmlschema }}" />
+<meta property="article:tag" content="{{ seo_tags }}" />
 <meta property="fb:admins" content="{{ site.fbadmin }}" />
-<!-- Schema.org markup for Google -->
-<meta itemprop="name" content="{% if page.title %}{{page.title}}{% else %}{{site.title}}{% endif %}">
-<meta itemprop="description" content="{{ page.description }}">
-<meta itemprop="image" content="{{ site.url }}/assets/img{{ page.img }}">
-<!-- Twitter Card data -->
+<meta itemprop="name" content="{{ seo_title }}">
+<meta itemprop="description" content="{{ seo_description }}">
+<meta itemprop="image" content="{{ seo_image }}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="{{ site.twitter }}">
-<meta name="twitter:title" content="{% if page.title %}{{page.title}}{% else %}{{site.title}}{% endif %}">
-<meta name="twitter:description" content="{{ page.description | truncate: 200 }}">
-<meta name="twitter:creator" content="{{% site.twitter %}}">
+<meta name="twitter:title" content="{{ seo_title }}">
+<meta name="twitter:description" content="{{ seo_description | truncate: 200 }}">
+<meta name="twitter:creator" content="{{ site.twitter }}">
 <meta data-rh="true" name="twitter:label1" content="Word count"/>
 <meta data-rh="true" name="twitter:data1" content="{{ words }}"/>
-<meta name="twitter:image:src" content="{{ site.url }}/assets/img/{{ page.img }}">
+<meta name="twitter:image:src" content="{{ seo_image }}">

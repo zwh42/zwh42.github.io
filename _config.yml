@@ -27,9 +27,10 @@ highlight_theme: syntax-base16.monokai.dark # select a dark theme for the code h
 author: wenhao # add your name
 author-pic: /assets/images/profile.svg
 about-author: Digital explorer and software architect. Documenting the journey through code, technology, and the endless frontier of knowledge. Welcome to Terminus Log - a waypoint in the vast digital universe.
+default_post_image: posts/welcome.svg
 
 # Contact links
-email: your-email@example.com # Add your Email address
+email: # Add your Email address
 phone: # Add your Phone number
 website: https://zwh42.github.io # Add your website
 linkedin: # Add your Linkedin handle
@@ -74,7 +75,7 @@ compress_html:
   startings: [html, head, body]
 
 # Outputting
-timezone: # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+timezone: Asia/Shanghai # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
 
 category_archive:
   type: liquid

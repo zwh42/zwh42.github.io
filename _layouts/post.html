@@ -4,6 +4,7 @@ layout: default
 {% include calculate_relative_base.html %}
 {% capture post_url %}{{ relativebase }}{{ page.url }}{% endcapture %}
 {% assign post_url = post_url | replace: "//", "/" %}
+{% assign cover_img = page.img | default: site.default_post_image %}
 <section class="hidden">
   <div class="post">
       <a  class="post-list-title" href="{{ post_url }}">{{ page.title }}</a>
@@ -18,7 +19,7 @@ layout: default
   <article class="page" itemscope itemtype="https://schema.org/CreativeWork">
     {% include schema-meta.html %}
     <div class="page-image">
-      <div class="cover-image" style="background: url('{{ relativebase }}assets/img/{{ page.img }}') center no-repeat; background-size: cover;"></div>
+      <div class="cover-image" style="background: url('{{ relativebase }}assets/img/{{ cover_img }}') center no-repeat; background-size: cover;"></div>
     </div>
     <div class="wrapper">
       <div class="page-content">
