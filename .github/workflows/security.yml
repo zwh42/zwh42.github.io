@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   ruby-dependency-audit:
@@ -29,4 +30,34 @@ jobs:
         run: gem install bundler-audit --no-document
 
       - name: Run bundle audit
+        id: bundle_audit
+        continue-on-error: true
         run: bundle audit check --update
+
+      - name: Create issue on audit failure
+        if: steps.bundle_audit.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `Security audit failed: ${context.sha.slice(0, 7)}`;
+            const body = [
+              "Automated dependency security audit failed.",
+              "",
+              `- Workflow: ${context.workflow}`,
+              `- Branch: ${context.ref}`,
+              `- Commit: ${context.sha}`,
+              `- Run: https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
+              "",
+              "Please review the failing logs and patch vulnerable dependencies."
+            ].join("\n");
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ["security", "dependencies", "automated"]
+            });
+
+      - name: Fail workflow if audit failed
+        if: steps.bundle_audit.outcome == 'failure'
+        run: exit 1
