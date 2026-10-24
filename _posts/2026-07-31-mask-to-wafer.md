@@ -6,10 +6,14 @@ title: "一张 Mask 图形，要经过多少个模型，才能真正落到晶圆
 date: 2026-07-31 22:32:07 +0800
 tags: [光刻, 掩模, 计算光刻]
 author: 端点星日志
-description: "版图里的一条直线，到了晶圆上，从来不是同一条直线。"
+description: "沿掩模散射、投影、光刻胶、显影和刻蚀建立前向链，推导 NILS、MEEF 与误差传播，再检查共同工艺窗口和随机失效。"
 source_url: "https://mp.weixin.qq.com/s/l4Bico-q_nLVzB86DzI4ZQ"
 toc: true
+last_modified_at: 2026-10-25
+mathjax: true
 ---
+
+*2026-10-25 修订 · [计算光刻阅读路线](/lithography/)*
 
 版图里的一条直线，到了晶圆上，从来不是同一条直线。
 
@@ -24,7 +28,7 @@ toc: true
 如果只数决定图形状态的前向物理转换，可以拆成 8 个模块；再把计量校准以及随机性、工艺波动单列，就是 10 个左右。
 
 
-![](/assets/images/wechat/mask-to-wafer-01.png)
+
 
 模型数量只是表象。真正需要审查的是信息如何在模块间传递：**每一步都在改变信息的表达形式，而下一步只能看到上一步交出的状态。** 接口一旦丢掉相位、深度或材料边界，后续模型即使各自“很准”，整条链仍可能给出错误答案。
 
@@ -42,17 +46,21 @@ toc: true
 
 三者不能直接互换。把理想多边形交给成像模型，等于假设掩模制造没有误差。在宽松节点，这类误差可能被工艺窗口吸收；到了低 (k_1)、强 OPC、EUV 或高数值孔径场景，它会进入边缘放置误差（EPE）和最佳焦面误差。
 
+<img src="/assets/images/references/photolithography-etching-process.svg" width="260" alt="正性光刻胶涂布、曝光、显影及刻蚀的纵向工艺示意">
+
+*图 1：Cmglee，Photolithography etching process（2011），[Wikimedia Commons 原文件页](https://commons.wikimedia.org/wiki/File:Photolithography_etching_process.svg)，[CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)，原文件未修改。图示正胶曝光、显影和图形转移的基本步骤，不按实际比例，也未画出本文全部光学、化学与计量过程。访问日期：2026-10-25。*
+
 ## 第一层：掩模是三维电磁散射体
 
 最便宜的掩模模型是薄掩模近似，也叫 Kirchhoff 模型。它把掩模视为没有厚度的二维复透过率函数：开口区透光，吸收区遮光，移相区再附加相位。掩模衍射谱可以直接由二维傅里叶变换得到，速度很快，适合全芯片 OPC。
 
 但真实掩模有厚度。当特征尺寸与曝光波长进入同一量级，或 EUV 多层膜、吸收体和侧壁不可忽略时，光会在材料界面反射、耦合并发生偏振转换，改变各衍射级次的**振幅和相位**。
 
-相位尤其关键。晶圆图形由多个衍射级次干涉形成；相对相位有误，即使各级次能量看起来接近，最佳焦面、左右不对称性和线端位置仍可能偏移。全芯片 3D 计算光刻研究已经展示了随节距和入射角变化的非零最佳焦面偏移。[3]
+相位尤其关键。晶圆图形由多个衍射级次干涉形成；相对相位有误，即使各级次能量看起来接近，最佳焦面、左右不对称性和线端位置仍可能偏移。全芯片 3D 计算光刻研究已经展示了随节距和入射角变化的非零最佳焦面偏移。[[3]](https://doi.org/10.1117/12.916076)
 
-严谨模型直接求解 Maxwell 方程，常见方法包括 FDTD、RCWA/波导法和有限元法。它们能处理三维形貌、材料色散、斜入射和偏振，但代价远高于一次傅里叶变换。[1][4]
+严谨模型直接求解 Maxwell 方程，常见方法包括 FDTD、RCWA/波导法和有限元法。它们能处理三维形貌、材料色散、斜入射和偏振，但代价远高于一次傅里叶变换。[[1]](https://www.iisb.fraunhofer.de/de/press_media/pressemitteilungen/pressearchiv/archiv_2026/frits-zernike-award.html)[[4]](https://www.iue.tuwien.ac.at/phd/kirchauer/)
 
-生产流程通常先用严谨求解器计算代表性结构，再把面积、边和角部响应压缩为可复用的局部滤波器，用于全芯片快速计算。M3D 就是这一思路的代表。[3]
+生产流程通常先用严谨求解器计算代表性结构，再把面积、边和角部响应压缩为可复用的局部滤波器，用于全芯片快速计算。M3D 就是这一思路的代表。[[3]](https://doi.org/10.1117/12.916076)
 
 对 EUV，这一层更复杂。反射式多层膜、约 6° 斜入射和吸收体遮蔽会让水平与垂直图形出现不同响应，掩模形貌还会与非远心性耦合。
 
@@ -67,9 +75,9 @@ toc: true
 - Abbe 方法按光源点逐个计算相干像，最后对强度求和，物理直观但计算昂贵。
 - Hopkins 方法把光源和投影系统编码进传输交叉系数（TCC），再通过相干系统分解（SOCS）压缩为少量卷积核：
 
-I(x,y) ≈ Σₖ λₖ |hₖ ⊗ M|²
+$$ I(x,y)\approx\sum_{k=1}^{K}\lambda_k\left|(h_k*M)(x,y)\right|^2. $$
 
-完整 Hopkins 积分并不便宜。全芯片成像能算下来，依靠的是低秩分解、少量主导核和 FFT。[1][2][5]
+完整 Hopkins 积分并不便宜。全芯片成像能算下来，依靠的是低秩分解、少量主导核和 FFT。[[1]](https://www.iisb.fraunhofer.de/de/press_media/pressemitteilungen/pressearchiv/archiv_2026/frits-zernike-award.html)[[2]](https://doi.org/10.1515/aot-2012-0037)[[5]](https://doi.org/10.1631/jzus.C1000219)
 
 真实成像模型还要接收光源形状、数值孔径、光瞳透过率、偏振、Zernike 像差、杂散光、焦点、带宽和扫描扰动。高数值孔径成像还必须考虑矢量电场。
 
@@ -79,9 +87,9 @@ I(x,y) ≈ Σₖ λₖ |hₖ ⊗ M|²
 
 光刻胶有折射率、吸收系数和有限厚度，下方还有底部抗反射层、硬掩模、氧化层、硅以及已有器件结构。
 
-光进入多层膜后会透射和反射。入射波与反射波在胶内干涉，形成随深度变化的驻波；胶厚或下层反射率变化，会带来局部能量和 CD 摆动。对平坦膜堆栈，可以用 Fresnel 关系或传输矩阵法高效求解。[4]
+光进入多层膜后会透射和反射。入射波与反射波在胶内干涉，形成随深度变化的驻波；胶厚或下层反射率变化，会带来局部能量和 CD 摆动。对平坦膜堆栈，可以用 Fresnel 关系或传输矩阵法高效求解。[[4]](https://www.iue.tuwien.ac.at/phd/kirchauer/)
 
-如果晶圆已有明显三维形貌，下层结构还会让光再次衍射。W3D 模型描述的正是**晶圆已有形貌对本次曝光光场的影响**，而不是刻蚀。[3]
+如果晶圆已有明显三维形貌，下层结构还会让光再次衍射。W3D 模型描述的正是**晶圆已有形貌对本次曝光光场的影响**，而不是刻蚀。[[3]](https://doi.org/10.1117/12.916076)
 
 因此，空中像与三维胶内像不是两个名称，而是两种不同输入。对厚胶、非平坦基底和高数值孔径场景，仅保留单一平面的空中像，可能过早丢掉深度和材料边界信息。
 
@@ -89,11 +97,11 @@ I(x,y) ≈ Σₖ λₖ |hₖ ⊗ M|²
 
 对化学放大型光刻胶（CAR），曝光不会直接“刻出”边界，而是让光致产酸剂（PAG）产生酸。一个常见简化描述是：
 
-∂[PAG]/∂t = −C I [PAG]
+$$ \frac{\partial [\mathrm{PAG}]}{\partial t}=-C I[\mathrm{PAG}]. $$
 
 其中 (I) 是胶内局部光强，(C) 与感光速度有关。曝光后的输出不是几何轮廓，而是三维酸浓度或潜像分布。
 
-Dill 模型进一步用 (A)、(B)、(C) 描述可漂白吸收、不可漂白吸收和感光反应速率，建立光场、吸收与感光物种消耗之间可测量、可校准的联系。[1][4]
+这里还必须区分胶体系。经典 Dill ABC 模型首先针对常规正性胶中的感光物种消耗，写作 $α=Am+B$ 和 $∂_t m=-CIm$；它不是完整的化学放大胶产酸—淬灭—脱保护模型。将类似的一阶感光反应式用于 PAG 是一种简化，必须重新说明反应物和参数含义，不能把 DNQ 胶的 ABC 参数直接移植过来。[[6]](https://www.iue.tuwien.ac.at/phd/kirchauer/node69.html)
 
 这里容易出现两个误解：光刻胶响应不是把空中像乘一个常数；等强度线也不是天然的胶边界。固定阈值只是速度优先的工程近似，不能被当成真实光化学机制。
 
@@ -103,9 +111,9 @@ Dill 模型进一步用 (A)、(B)、(C) 描述可漂白吸收、不可漂白吸�
 
 扩散一方面能平滑曝光阶段的微观不均匀性，另一方面也会推宽边缘，甚至连接本不该连通的区域。扩散长度粗略随 √(2Dt) 增长，因此温度、时间和扩散系数本身就是成像参数。
 
-在先进节点，光子散粒噪声、PAG 离散分布和二次电子先造成潜像波动，PEB 再把这些波动传递为线边粗糙度、局部 CD 和缺失或桥连概率。[1][2]
+在先进节点，光子散粒噪声、PAG 离散分布和二次电子先造成潜像波动，PEB 再把这些波动传递为线边粗糙度、局部 CD 和缺失或桥连概率。[[1]](https://www.iisb.fraunhofer.de/de/press_media/pressemitteilungen/pressearchiv/archiv_2026/frits-zernike-award.html)[[2]](https://doi.org/10.1515/aot-2012-0037)
 
-完整反应—扩散方程无法在每次全芯片 OPC 迭代中求解。紧凑光刻胶模型通常用高斯扩散项、非线性变换和可校准系数近似。R3D 模型则保留多尺度扩散、垂直方向和顶部损失等关键自由度，同时把计算量压到生产可接受范围。[3]
+完整反应—扩散方程无法在每次全芯片 OPC 迭代中求解。紧凑光刻胶模型通常用高斯扩散项、非线性变换和可校准系数近似。R3D 模型则保留多尺度扩散、垂直方向和顶部损失等关键自由度，同时把计算量压到生产可接受范围。[[3]](https://doi.org/10.1117/12.916076)
 
 ## 第六层：显影不是“过阈值就删除”
 
@@ -113,13 +121,13 @@ PEB 后得到的是脱保护程度或溶解度场。显影模型才把连续场�
 
 Mack 类模型把局部溶解速率与抑制剂或脱保护比例联系起来；cell removal、level set 和 fast marching 等方法再推进溶解前沿。最终输出包括顶部与底部 CD、侧壁角、顶部损失、footing、undercut，以及线端和接触孔的完整三维形状。
 
-二维模型可能判断某个底部轮廓合格，三维模型却会发现顶部已经损失、侧壁过斜，或 SRAF 在胶顶意外显影。单一高度的胶层 CD，不等于完整胶形，更不等于最终晶圆 CD。[3]
+二维模型可能判断某个底部轮廓合格，三维模型却会发现顶部已经损失、侧壁过斜，或 SRAF 在胶顶意外显影。单一高度的胶层 CD，不等于完整胶形，更不等于最终晶圆 CD。[[3]](https://doi.org/10.1117/12.916076)
 
 ## 第七层：刻蚀决定最终晶圆轮廓
 
 显影完成只是图形形成的中间站。刻蚀模型还要接收三维胶形、剩余胶厚、硬掩模与材料堆栈、离子和活性物种、入射方向与能量、材料选择比、再沉积和局部图形密度。
 
-胶顶损失、侧壁角和底部 footing 会改变刻蚀开口；节距与图形密度会改变局部反应物供给；再沉积又会继续塑造侧壁。因此，刻蚀后 CD 与显影后 CD 未必是简单线性关系。[2]
+胶顶损失、侧壁角和底部 footing 会改变刻蚀开口；节距与图形密度会改变局部反应物供给；再沉积又会继续塑造侧壁。因此，刻蚀后 CD 与显影后 CD 未必是简单线性关系。[[2]](https://doi.org/10.1515/aot-2012-0037)
 
 严谨刻蚀模型可以描述离子输运、化学反应、吸附、溅射和界面演化，但很难直接用于全芯片。生产级 etch-aware OPC 更多使用经过晶圆数据校准的经验或半经验模型。
 
@@ -141,11 +149,11 @@ Mack 类模型把局部溶解速率与抑制剂或脱保护比例联系起来；
 - 除 CD 外加入轮廓、侧壁和顶部损失；
 - 让校准集、验证集和产品图形分布彼此独立。
 
-Kafai Lai 把从掩模一直预测到刻蚀后晶圆轮廓、再交给器件模型评估的完整链称为“虚拟晶圆厂”。[2] 实验仍不可替代，但它不再只用于试错，也用于建立和检验模型的可迁移性。
+Kafai Lai 把从掩模一直预测到刻蚀后晶圆轮廓、再交给器件模型评估的完整链称为“虚拟晶圆厂”。[[2]](https://doi.org/10.1515/aot-2012-0037) 实验仍不可替代，但它不再只用于试错，也用于建立和检验模型的可迁移性。
 
 ## 为什么严谨模型和紧凑模型总是成对出现
 
-模型越接近第一性原理，解释力和跨工艺外推能力通常越强，计算代价也越高。全芯片 OPC 面对海量边缘片段和多组工艺条件，不可能在每次移动掩模边缘后，都重新求解三维 Maxwell 方程、反应—扩散、显影前沿和等离子体输运。
+显式保留主导物理机制，有助于解释工艺变化，但跨工艺预测仍取决于材料输入、边界条件和验证数据；更严谨的方程并不自动保证更强外推。其计算代价也往往更高。全芯片 OPC 面对海量边缘片段和多组工艺条件，不可能在每次移动掩模边缘后，都重新求解三维 Maxwell 方程、反应—扩散、显影前沿和等离子体输运。
 
 生产流程因此需要两个相互依赖的尺度：
 
@@ -153,25 +161,104 @@ Kafai Lai 把从掩模一直预测到刻蚀后晶圆轮廓、再交给器件模�
 - 全芯片紧凑模型回答完整掩模能否通过验证、哪些边缘要移动、哪些热点会在工艺窗口边缘失效。
 
 
-![](/assets/images/wechat/mask-to-wafer-02.png)
 
-三者缺一不可。少了紧凑模型，会“很准但算不动”；少了严谨模型和实验约束，则可能“算得动但不可信”。
+
+严谨模型、紧凑模型与实验约束共同构成闭环。少了紧凑模型，会“很准但算不动”；少了严谨模型和实验约束，则可能“算得动但不可信”。
 
 ## OPC：沿着前向链反推掩模
 
 把所有模块合起来，从掩模到晶圆可以写成一个前向算子：
 
-C_wafer = ℱ(M; p)
+$$ C_{\mathrm{wafer}}=\mathcal F(M;\mathbf p). $$
 
 其中 (M) 是掩模，(p) 包含光源、像差、膜堆栈、光刻胶、刻蚀、焦点和曝光剂量等工艺参数。
 
 OPC 要做的是给定目标轮廓 C_target，寻找一个掩模，使得：
 
-ℱ(M; p) ≈ C_target
+$$ \mathcal F(M;\mathbf p)\approx C_{\mathrm{target}}. $$
 
 这个逆问题并不友好。投影系统会丢掉高空间频率，不同掩模可能得到相近的晶圆像；掩模几何还受到最小尺寸、间距和写入约束。最佳掩模不仅要在标称条件下对齐，还要对焦点、剂量和掩模误差保持稳健。
 
-传统模型 OPC 会把边界切成线段，在控制点上计算 EPE，再移动边缘。矩阵方法会评估多个线段对每个控制点的共同影响，但 Jacobian 计算昂贵。稀疏矩阵 OPC 利用光学核的局域敏感区域，忽略大量弱耦合项，可以在保持接近矩阵法精度的同时减少计算。[5]
+传统模型 OPC 会把边界切成线段，在控制点上计算 EPE，再移动边缘。矩阵方法会评估多个线段对每个控制点的共同影响，但 Jacobian 计算昂贵。稀疏矩阵 OPC 利用光学核的局域敏感区域，忽略大量弱耦合项，可以在保持接近矩阵法精度的同时减少计算。[[5]](https://doi.org/10.1631/jzus.C1000219)
+
+
+## 用边缘敏感度把不同模型的误差放到同一把尺上
+
+不同模块使用不同单位：掩模几何以长度计，光学场有振幅和相位，酸以浓度计，显影以前沿速度计。若只比较各自的拟合残差，就无法回答最终边缘误差来自哪里。必须把扰动一直传播到同一个晶圆观测量。
+
+先以二维阈值模型为教学例子。设沿边界法向的坐标为 $n$，归一化像强为 $I(n)$，曝光剂量为 $D$，边界满足 $D I(n)=E_{\mathrm{th}}$。对它作一阶微分：
+
+$$
+\delta n\approx\frac{\delta E_{\mathrm{th}}-I\delta D-D\delta I}{D\,\partial_n I}.
+$$
+
+这不是完整的胶模型，却揭示了通用的局部条件数：**边缘所在位置的像强斜率越小，同样的输入扰动越容易放大成位置误差。** 只比较整个图像的平均光强误差，可能错过低对比度线端或接触孔边缘的危险位置。[[1]](https://www.iisb.fraunhofer.de/de/press_media/pressemitteilungen/pressearchiv/archiv_2026/frits-zernike-award.html)
+
+取一个特征宽度 $w$，可以定义无量纲归一化像对数斜率：
+
+$$
+\mathrm{NILS}=w\left|\frac{\partial\ln I}{\partial n}\right|_{\mathrm{edge}}.
+$$
+
+在阈值、焦点和像形保持不变的小扰动条件下，单边剂量敏感度约为
+
+$$
+|\delta n|\approx\frac{w}{\mathrm{NILS}}\left|\frac{\delta D}{D}\right|.
+$$
+
+这里计算的是单边位置，不能未经说明就当作双边 CD 变化。两条边的法向不同，还可能发生不对称移动；真实显影和反应扩散会进一步改变关系。NILS 是定位薄弱图形的光学指标，不能单独替代晶圆工艺窗口。
+
+掩模误差的传播也要写明坐标。设缩小倍率为 $R$，掩模上测得的 CD 为 $d_m$，其晶圆尺度等效值为 $d_m/R$，则一种常用定义是
+
+$$
+\mathrm{MEEF}=\frac{\partial d_w}{\partial(d_m/R)}
+=R\frac{\partial d_w}{\partial d_m}.
+$$
+
+若忘记缩小倍率，两个团队报告的 MEEF 会差一个 $R$。MEEF 还取决于图形、焦点和曝光条件；某一点的 MEEF 不能代表整片版图。Wong 等将掩模误差与焦点、剂量放在同一分析中，正是为了避免只在标称点讨论掩模容差。[[7]](https://doi.org/10.1109/66.843639)
+
+推广到整个链，令 $\mathbf x_j$ 表示第 $j$ 个模块的输出状态，其局部线性化为
+
+$$
+\delta\mathbf x_{j+1}=J_j\delta\mathbf x_j+B_j\delta\mathbf p_j,
+\qquad J_j=\frac{\partial\mathcal F_j}{\partial\mathbf x_j}.
+$$
+
+上游误差经过后续 Jacobian 连乘才到达最终边缘。这个式子解释了为什么同样的掩模制造精度，对不同 pitch 或不同照明的晶圆结果可以不同：下游传递增益本来就不同。
+
+如果用协方差传播，最终的近似形式是 $\Sigma_y\approx J\Sigma_xJ^\mathsf T$，其中必须保留相关项。只有在误差独立或相关性可忽略时，才可以把各项标准差做平方和开根。光源漂移同时改变多类图形，掩模 CD 的区域偏差同时移动邻近边缘，都不满足天然独立的假设。本文这些微分式是局部分析，遇到桥连、断线和轮廓拓扑变化，应直接进行非线性仿真或统计抽样。
+
+## 工艺窗口是多种图形合格区域的交集
+
+单个图形在标称焦点和剂量下符合 CD，只说明它通过了一个点。对第 $i$ 类图形，在焦点 $f$、剂量 $D$ 下定义允许区域
+
+$$
+\Omega_i=\{(f,D):\ |\mathrm{EPE}_{i,q}(f,D)|\le e_{i,q}
+\ \text{且形貌与连通性符合规格}\}.
+$$
+
+全层的共同工艺窗口是 $\Omega=\bigcap_i\Omega_i$。孤立线、密集线、线端、接触孔可能各自在很大的区域内可印，但它们的区域错开以后，交集依然很小。OPC 或 source 优化若只提高容易图形的标称匹配，不一定扩大这个交集。[[1]](https://www.iisb.fraunhofer.de/de/press_media/pressemitteilungen/pressearchiv/archiv_2026/frits-zernike-award.html)[[2]](https://doi.org/10.1515/aot-2012-0037)
+
+实践中应分别检查三个层次。第一是每一种图形的焦点—剂量响应，包括 CD、EPE 和残胶形貌。第二是同一组曝光条件下所有关键图形是否共同合格。第三是在掩模误差、膜厚、材料与设备状态改变后，这个共同窗口还剩多少。固定阈值的二维仿真对第一层已有帮助，但不能直接声称完成第三层资格验证。
+
+因此，模型链的交付物应该包含条件：预测的是 ADI 还是 AEI，覆盖哪些图形、材料、焦点和剂量，使用哪个计量定义，模型残差与数值误差各有多大。没有适用域的“精度”是一个缺少主语的数字。
+
+## 平均轮廓合格之后，为什么仍会失败
+
+对于 EUV 等对离散事件敏感的情形，平均轮廓只描述分布的一部分。理想化地，面积 $A$ 上吸收光子数的期望可写为
+
+$$
+\bar N=\frac{D A\,a}{hc/\lambda},
+\qquad\frac{\sigma_N}{\bar N}=\frac1{\sqrt{\bar N}},
+$$
+
+其中 $a$ 是该面积内的有效吸收比例，假设独立光子且计数服从泊松分布。这个教学关系说明剂量、波长与采样体积为什么会影响统计波动；它并不把真实胶中的二次电子、反应与分子分布简化成只有一种噪声。[[1]](https://www.iisb.fraunhofer.de/de/press_media/pressemitteilungen/pressearchiv/archiv_2026/frits-zernike-award.html)
+
+从光子到缺陷还有几层传递：局部能量分布改变产酸，反应和扩散引入空间相关性，显影又把连续状态变成边界或连通性事件。两个模型可以具有相近平均 CD，却给出不同的 LER、孔缺失概率和桥连概率。因而随机模型要验证分布、空间相关性和稀有失效，不能只重新拟合一次平均 CD。[[8]](https://doi.org/10.1117/1.JMM.16.4.041013)
+
+报告“没有看到缺陷”还需要样本量。若 $N$ 次独立机会中观察到零次失败，单侧 95% 二项分布上界为 $p_{\mathrm{up}}=1-0.05^{1/N}$，大样本时约为 $3/N$。这只是统计推导，真实晶圆的空间相关会减少有效独立样本数。仿真声称极低缺陷率时，同样必须说明尾部估计方法和验证证据。
+
+这些分析把模型数量问题转成了误差预算问题：不是每个模块都越复杂越好，而是要在最终指标最敏感、实验最能区分的环节保留足够自由度。
 
 ## 审查一条模型链，先问四个问题
 
@@ -207,14 +294,19 @@ OPC 要做的是给定目标轮廓 C_target，寻找一个掩模，使得：
 
 OPC 所做的，是沿着这条不可逆、会丢信息、还带随机性的链条反向追问：为了让晶圆上留下我们想要的边界，最开始那张掩模究竟应该长什么样？
 
-你所在的流程里，模型链停在显影后，还是已经延伸到刻蚀后轮廓？真正决定模型边界的，往往正是这个答案。
+在建模项目开始时，就应写明目标是显影后胶形还是刻蚀后材料边界；后续数据、模型接口和验证证据都应与这个目标一致。
 
 ---
 
 ## 参考文献
 
-1. Andreas Erdmann, Optical and EUV Lithography: A Modeling Perspective, SPIE Press, 2021.
-2. Kafai Lai, “Review of computational lithography modeling: focusing on extending optical lithography and design-technology co-optimization,” Advanced Optical Technologies, 1(4), 249–267, 2012.
-3. Peng Liu, Zhengfan Zhang, Song Lan, et al., “A full-chip 3D computational lithography framework,” Proceedings of SPIE, Vol. 8326, 83260A, 2012.
-4. Tim Fühner, Artificial Evolution for the Optimization of Lithographic Process Conditions, doctoral dissertation, Friedrich-Alexander-Universität Erlangen-Nürnberg, 2013.
-5. Bin Lin, Xiao-lang Yan, Zheng Shi, and Yi-wei Yang, “A sparse matrix model-based optical proximity correction algorithm with model-based mapping between segments and control sites,” Journal of Zhejiang University-SCIENCE C, 12(5), 436–442, 2011.
+以下论文和教材用于对应的物理或方法论说明；文中的敏感度、协方差及零失效上界为在已写明假设下的推导。网页访问日期均为 2026-10-25。
+
+1. Andreas Erdmann. *Optical and EUV Lithography: A Modeling Perspective*. SPIE Press, 2021. ISBN 9781510639010. [作者机构出版记录](https://www.iisb.fraunhofer.de/de/press_media/pressemitteilungen/pressearchiv/archiv_2026/frits-zernike-award.html)。
+2. Kafai Lai. “Review of computational lithography modeling: focusing on extending optical lithography and design-technology co-optimization.” *Advanced Optical Technologies*, 1(4):249–267, 2012. [DOI:10.1515/aot-2012-0037](https://doi.org/10.1515/aot-2012-0037)。
+3. Peng Liu, Zhengfan Zhang, Song Lan, et al. “A full-chip 3D computational lithography framework.” *Proceedings of SPIE*, 8326:83260A, 2012. [DOI:10.1117/12.916076](https://doi.org/10.1117/12.916076)。该文的 M3D/W3D/R3D 是其特定框架命名，不是全部软件共同采用的接口标准。
+4. Heinrich Kirchauer. *Photolithography Simulation*. TU Wien 博士论文在线版，1998，第 4–5 章。[大学原始文档](https://www.iue.tuwien.ac.at/phd/kirchauer/)。
+5. Bin Lin, Xiao-lang Yan, Zheng Shi, Yi-wei Yang. “A sparse matrix model-based optical proximity correction algorithm with model-based mapping between segments and control sites.” *Journal of Zhejiang University-SCIENCE C*, 12(5):436–442, 2011. [DOI:10.1631/jzus.C1000219](https://doi.org/10.1631/jzus.C1000219)。[勘误](https://doi.org/10.1631/jzus.C10e0219)。
+6. F. H. Dill, W. P. Hornberger, P. S. Hauge, J. M. Shaw. “Characterization of Positive Photoresist.” *IEEE Transactions on Electron Devices*, 22(7):445–452, 1975. [DOI:10.1109/T-ED.1975.18159](https://doi.org/10.1109/T-ED.1975.18159)；公式及参数定义另见 Kirchauer 论文 [§5.1.2](https://www.iue.tuwien.ac.at/phd/kirchauer/node69.html)。
+7. Alfred K. Wong, Richard A. Ferguson, Scott M. Mansfield. “The mask error factor in optical lithography.” *IEEE Transactions on Semiconductor Manufacturing*, 13(2):235–242, 2000. [DOI:10.1109/66.843639](https://doi.org/10.1109/66.843639)。
+8. Peter De Bisschop. “Stochastic effects in EUV lithography: random, local CD variability, and printing failures.” *Journal of Micro/Nanolithography, MEMS, and MOEMS*, 16(4):041013, 2017. [DOI:10.1117/1.JMM.16.4.041013](https://doi.org/10.1117/1.JMM.16.4.041013)。

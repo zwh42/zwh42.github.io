@@ -20,6 +20,10 @@ Use [`docs/post-template.md`](docs/post-template.md) when creating new posts.
 3. Keep image paths relative to `assets/img/` (example: `posts/welcome.svg`)
 4. Commit and push to `master` to publish via GitHub Pages
 
+## Computational lithography series
+
+The fourteen revised articles are organized by the [reading guide](https://zwh42.github.io/lithography/). Each article contains numbered source citations and figure credits. Third-party image sources, reuse licenses, changes and checksums are listed in [the image provenance record](assets/images/references/README.md). Research verification notes are kept in `docs/research/` (excluded from the published site).
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details. 

@@ -16,6 +16,7 @@ rules = YAML.load_file(File.join(source, '_data/taxonomy.yml'))
 fixtures = [
   ['categories', { 'title' => 'GPU', 'categories' => ['自定义', '第二分类'] }, '自定义|第二分类'],
   ['categories', { 'title' => 'GPU', 'categories' => ['自定义', '自定义'] }, '自定义'],
+  ['categories', { 'title' => 'GPU 光刻仿真工具' }, '算力与工具'],
   ['categories', { 'title' => '曲线掩模走到哪一步了', 'tags' => ['ILT'] }, '掩模工艺'],
   ['categories', { 'title' => '一篇没有领域关键词的文章', 'tags' => ['光学'] }, '光学成像'],
   ['categories', { 'title' => '读书时想到的一件事', 'tags' => [] }, '随笔'],
@@ -63,7 +64,7 @@ end
 end
 puts "PASS: #{posts.size} posts, #{categories.size} categories, #{tags.size} tags; counts, groups and timelines agree"
 
-routes = ['/', '/categories/', '/archive/', '/blog/', '/tags/', '/tag/', '/category/', '/about/', '/portfolio/', '/404.html']
+routes = ['/', '/categories/', '/archive/', '/blog/', '/tags/', '/tag/', '/category/', '/about/', '/portfolio/', '/lithography/', '/404.html']
 home_pages = Dir[File.join(root, 'page*/index.html')]
 routes += home_pages.map { |path| path.delete_prefix(root).delete_suffix('index.html') }
 routes += posts.map { |post| post['url'] }

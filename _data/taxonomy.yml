@@ -2,8 +2,8 @@
 default_category: 随笔
 categories:
   - name: 算力与工具
-    title_terms: [culitho, gpu, klayout, python, 工具]
-    tag_terms: [culitho, gpu, klayout, python]
+    title_terms: [gpu, klayout, python, 工具]
+    tag_terms: [gpu, klayout, python]
   - name: 掩模工艺
     title_terms: [曲线掩模, 曲线mask, curvilinear]
     tag_terms: [曲线掩模, 掩模工艺]
@@ -42,7 +42,7 @@ tag_rules:
   - name: 建模
     terms: [建模, 模型校准]
   - name: GPU
-    terms: [gpu, culitho]
+    terms: [gpu]
   - name: KLayout
     terms: [klayout]
   - name: Python

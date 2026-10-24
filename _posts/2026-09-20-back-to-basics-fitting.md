@@ -9,7 +9,11 @@ author: 端点星日志
 description: "从两束光的干涉出发，推到 Abbe、Hopkins 与相干系统求和，再沿着相位、偏振、掩模厚度和散射，理解光刻模型怎样一步步变复杂，以及严格求解为什么仍然需要校准。"
 source_url: "https://mp.weixin.qq.com/s/pvi1R16vRRkcWKs7WrwdfA"
 toc: true
+last_modified_at: 2026-10-25
+mathjax: true
 ---
+
+*2026-10-25 修订 · [计算光刻阅读路线](/lithography/)*
 
 Maxwell 方程给出了光传播的规律，却不会直接给出晶圆上一条线的宽度。
 
@@ -19,15 +23,15 @@ Maxwell 方程给出了光传播的规律，却不会直接给出晶圆上一条
 
 要把它们串起来，可以先抓住一件具体的事。
 
-掩模把入射光变成许多衍射波。物镜接收其中一部分，让它们在像面重新叠���。我们看到的明暗图案，取决于这些波的振幅、相位，以及彼此能否干涉。
+掩模把入射光变成许多衍射波。物镜接收其中一部分，让它们在像面重新叠加。我们看到的明暗图案，取决于这些波的振幅、相位，以及彼此能否干涉。
 
 后面几乎每一步，都在回答这三个量怎样获得、哪些关系可以简化，以及简化后还剩下多大误差。
 
-**严格求解的前提，是问题已经定义完整。**
+## 严格求解首先要求完整的输入
 
 考虑固定波长、线性、各向同性、非磁材料中的电磁场。在没有体源的计算区域，频域 Maxwell 方程可以写成
 
-∇×∇×E−k20εr(r)E=0
+$$ \nabla\times\nabla\times\mathbf E-k_0^2\varepsilon_r(\mathbf r)\mathbf E=0. $$
 
 这里 E 是复电场，k0=2π/λ0，λ0 为真空波长，εr 是随位置变化的复相对介电常数。几何、材料、入射场和边界条件确定以后，才构成一个可求解的问题。
 
@@ -35,7 +39,7 @@ Maxwell 方程给出了光传播的规律，却不会直接给出晶圆上一条
 
 有限元 FEM（Finite Element Method）、严格耦合波分析 RCWA（Rigorous Coupled-Wave Analysis）、时域有限差分 FDTD（Finite-Difference Time-Domain）等方法，可以数值求解相应电磁问题。工程上称它们为 rigorous，强调对所选电磁模型的严谨处理。计算仍需要有限网格、有限模态或有限区域，结果也要做收敛检查。
 
-一项三维深紫外 DUV（Deep Ultraviolet）掩模研究同时讨论了有限元计算、衍射结果的收敛和实验空中像比较（Burger 等，2006）。同年的一项极紫外 EUV（Extreme Ultraviolet）掩模研究，则把严谨有限元与散射测量结合起来，反演掩模几何参数（Pomplun 等，2006）。
+一项三维深紫外 DUV（Deep Ultraviolet）掩模研究同时讨论了有限元计算、衍射结果的收敛和实验空中像比较[[5]](https://arxiv.org/abs/physics/0610218)。同年的一项极紫外 EUV（Extreme Ultraviolet）掩模研究，则把严谨有限元与散射测量结合起来，反演掩模几何参数[[6]](https://arxiv.org/abs/physics/0610236)。
 
 两项工作放在一起，恰好说明了严格求解与拟合的关系。给定几何后，可以精确地计算响应；真实几何尚不确定时，还要用测量去约束输入。继续加密网格，能够减小数值误差，却不会自动修正一个填错的侧壁角。
 
@@ -47,25 +51,25 @@ Maxwell 方程给出了光传播的规律，却不会直接给出晶圆上一条
 
 先把三维掩模压成二维复透过率 M(x,y)。在这个薄掩模模型里，出射场由入射场逐点相乘得到
 
-Eout(x,y)=M(x,y)Ein(x,y)
+$$ E_{\mathrm{out}}(x,y)=M(x,y)E_{\mathrm{in}}(x,y). $$
 
 “复数”保留了振幅与相位。开口、遮光和移相区域可以有不同的数值。“逐点相乘”则是更强的假设。它把结构内的传播和耦合，压缩成了每个位置的局部响应。
 
 再暂时采用标量场，并把物镜看作局部线性、平移不变的系统。线性意味着输入场相加，输出场也相加；平移不变意味着图形平移以后，输出只做相应平移。在这些条件下，一个照明方向的成像可以用卷积表示。
 
-初级推导还常采用近轴近似，简化传播角度依赖。薄掩模省略结构细节，标量模型省略电场方向，近轴近似限制角���处理，局部平移不变则允许同���个成像核在一小块区域复用。它们是四个需要分别检查的条件。
+初级推导还常采用近轴近似，简化传播角度依赖。薄掩模省略结构细节，标量模型省略电场方向，近轴近似限制角度处理，局部平移不变则允许同一个成像核在一小块区域复用。它们是四个需要分别检查的条件。
 
 至此，光学模型已经包含近似。即使后面的傅里叶变换算得完全准确，也只是在准确求解这套简化后的问题。
 
-**光学系统对电场线性，明暗图像却包含频率之间的交叉项。**
+## 从两束波理解相位和强度的非线性
 
 为了看清这一步，先把问题缩到一维。假设物镜传过来的光里，只保留两束衍射波。去掉不影响强度的公共相位后，像面场可以写成
 
-e(x)=a0+a1ei(2πfx+ϕ)
+$$ e(x)=a_0+a_1e^{i(2\pi f x+\phi)}. $$
 
 a0、a1 是非负振幅，f 是两束波横向空间频率的差，ϕ 是相对相位。暂时省略统一的比例系数，光强就是
 
-I(x)=a20+a21+2a0a1cos⁡(2πfx+ϕ)
+$$ I(x)=a_0^2+a_1^2+2a_0a_1\cos(2\pi f x+\phi). $$
 
 前两项给出平均背景，最后一项形成明暗起伏。条纹周期为 1/∣f∣。如果只剩一束无限延伸的平面波，强度就是常数；两束波之间的干涉，才在这个例子里产生空间图案。
 
@@ -74,7 +78,7 @@ I(x)=a20+a21+2a0a1cos⁡(2πfx+ϕ)
 
 图中的峰值与谷值分别是最大光强 Imax 和最小光强 Imin。条纹对比度可以写成 V=(Imax−Imin)/(Imax+Imin)。亮暗起伏越弱，V 越接近零。后面讨论偏振和散射时，可以回到这张图，观察它们怎样改变峰谷之间的差距。
 
-（图源 Konijnenberg 等，BSc Optics，第 2 版，2024，图 5.8；CC BY 4.0，原图截取。）
+*图 1：Sander Konijnenberg、Aurèle J. L. Adam、H. Paul Urbach，BSc Optics，第 2 版（TU Delft Open，2024），图 5.8，书页 125 / PDF 第 130 页。[教材原文](https://books.open.tudelft.nl/home/catalog/download/174/319/559?inline=1#page=130)，[出版记录与 DOI](https://doi.org/10.59490/tb.91)，[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。仅裁切原图，未重绘；该图不在教材版权页列出的例外清单中。访问日期：2026-10-25。*
 
 这个小例子还有两个后面会反复用到的结论。
 
@@ -86,6 +90,8 @@ I(x)=a20+a21+2a0a1cos⁡(2πfx+ϕ)
 
 离轴照明改变的正是这个偏移。一个原本在光瞳外的衍射级次，可能因此进入光瞳。判断分辨能力时，要看哪些波被接收、它们的频率差和干涉对比度，再看胶能否形成可用轮廓。光瞳截止频率本身还不是最终可印刷线宽。
 
+## 部分相干照明：源点之间叠加强度
+
 实际光源有许多方向。怎样把这些方向的贡献组合起来，就把我们带到了部分相干成像。
 
 在常用的照明模型中，不同光源点彼此不相干。对测量时间做平均时，源点之间的场交叉项消失，因此应当叠加强度。可对同一个源点，它照亮掩模后产生的各衍射级次仍然相干，必须先叠加电场。
@@ -94,9 +100,9 @@ I(x)=a20+a21+2a0a1cos⁡(2πfx+ϕ)
 
 令 S(s) 为非负光源权重，P 为光瞳函数，^M 为掩模的傅里叶变换，就得到 Abbe 形式
 
-es(x)=F−1 ⁣[^M(f)P(f+s)]
+$$ e_{\mathbf s}(\mathbf x)=\mathcal F^{-1}\!\left[\widehat M(\mathbf f)P(\mathbf f+\mathbf s)\right](\mathbf x), $$
 
-I(x)=∫S(s)∣es(x)∣2ds
+$$ I(\mathbf x)=\int S(\mathbf s)|e_{\mathbf s}(\mathbf x)|^2\,\mathrm d\mathbf s. $$
 
 第一式省略了不影响强度的源点相关载波相位。直观地看，就是对每个照明方向各算一张相干图，再按光源权重相加。
 
@@ -105,7 +111,7 @@ I(x)=∫S(s)∣es(x)∣2ds
 
 这张教学光路把单个相干通道的计算变得直观。左侧的场 U(x,y) 经第一片透镜变成中间平面的频谱；在这里改变不同频率的振幅或相位，再经第二片透镜组合成输出场。图中 kx,ky 是横向波矢，等于本文对应空间频率的 2π 倍；距离标记 f 表示透镜焦距。它展示的是傅里叶滤波原理，实际光刻机的投影物镜具有更复杂的结构。部分相干照明还需要按前面的公式，对各源点所得强度继续求和。
 
-（图源同上，图 6.18；CC BY 4.0，原图截取。）
+*图 2：同一教材，图 6.18，书页 164 / PDF 第 169 页。[教材原文](https://books.open.tudelft.nl/home/catalog/download/174/319/559?inline=1#page=169)，作者 Konijnenberg、Adam、Urbach，2024，[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。仅裁切原图，未重绘。图示第二片透镜再次作傅里叶变换，因此相对逆变换还包含坐标反转；这里用它说明频谱筛选，不能直接当作光刻机结构图。访问日期：2026-10-25。*
 
 这里也能解释一个常见误区。源点彼此不相干，并不意味着整幅图可以用一个强度模糊核去卷积 ∣M∣2。每个源点内部仍有掩模衍射级次之间的相位关系。一般部分相干成像需要保留这部分信息，单一强度卷积无法完整表达它。
 
@@ -113,15 +119,17 @@ I(x)=∫S(s)∣es(x)∣2ds
 
 大量版图共用同一光源和物镜。每换一次掩模，都重新遍历所有源点，会重复计算许多公共内容。能否先把这些内容合并起来？
 
-Hopkins 的部分相干表述（Hopkins，1953），可以从刚才的两波干涉直接理解。两束波的强度里出现一个交叉项；当掩模有许多频率时，就要把所有频率对的贡献加起来。
+## Hopkins：把频率之间的干涉提前组织起来
+
+Hopkins 的部分相干表述[[2]](https://doi.org/10.1098/rspa.1953.0071)，可以从刚才的两波干涉直接理解。两束波的强度里出现一个交叉项；当掩模有许多频率时，就要把所有频率对的贡献加起来。
 
 把 Abbe 公式中的模平方展开，并先对光源积分，得到
 
-I(x)=∬^M(f1)^M∗(f2)TCC(f1,f2)×ei2π(f1−f2)⋅xdf1df2
+$$ I(\mathbf x)=\iint\widehat M(\mathbf f_1)\widehat M^*(\mathbf f_2)\,T(\mathbf f_1,\mathbf f_2)e^{i2\pi(\mathbf f_1-\mathbf f_2)\cdot\mathbf x}\,\mathrm d\mathbf f_1\mathrm d\mathbf f_2, $$
 
 其中
 
-TCC(f1,f2)=∫S(s)P(f1+s)×P∗(f2+s)ds
+$$ T(\mathbf f_1,\mathbf f_2)=\int S(\mathbf s)P(\mathbf f_1+\mathbf s)P^*(\mathbf f_2+\mathbf s)\,\mathrm d\mathbf s. $$
 
 传输交叉系数 TCC，回答的就是两份掩模频率在这套照明和光瞳下，能以多大权重、什么相位关系共同贡献图像。
 
@@ -131,7 +139,7 @@ TCC(f1,f2)=∫S(s)P(f1+s)×P∗(f2+s)ds
 
 Abbe 与 Hopkins 在上述一致假设下等价，原因也由此明确了。它们保留同样的交叉项，只是改变了积分顺序。改用 Hopkins，不会自动改善薄掩模近似，也不会损失原本的部分相干物理。
 
-**SOCS 的核数，来自这个光学算子的分解。**
+## SOCS：截断算子与添加物理是两件事
 
 TCC 可复用，却仍然很大。二维掩模的 f1、f2 各有两个分量，TCC 是四维函数。将频率离散并展平成索引后，可以把它看作矩阵 T。
 
@@ -139,17 +147,17 @@ TCC 可复用，却仍然很大。二维掩模的 f1、f2 各有两个分量，T
 
 对一个离散源点，把各频率上的光瞳值排成列向量 ps，把源权重和积分权重合进 ws≥0，则
 
-T=∑swspsp†s
+$$ T=\sum_s w_s\mathbf p_s\mathbf p_s^\dagger,\qquad w_s\ge0. $$
 
 符号 † 表示共轭转置。每个源点贡献一个外积，所有外积按非负权重相加。于是对任意向量 v，都有
 
-v†Tv=∑sws∣p†sv∣2≥0
+$$ \mathbf v^\dagger T\mathbf v=\sum_s w_s|\mathbf p_s^\dagger\mathbf v|^2\ge0. $$
 
 这就证明了 T 是厄米半正定矩阵，其特征值可以取为非负数。这里的非负性来自强度的统计结构，并非额外拟合出来的限制。
 
 将 T 做特征分解，再把特征向量变回空间域，便得到相干系统求和 SOCS
 
-I(x)=N∑k=1λk∣(hk∗M)(x)∣2
+$$ I(\mathbf x)=\sum_{k=1}^{N}\lambda_k|(h_k*M)(\mathbf x)|^2,\qquad\lambda_k\ge0. $$
 
 hk 是成像核，λk≥0 是相应权重，星号表示卷积。它的计算顺序很简单。用每个核卷积掩模，对结果取模平方，再把强度加起来。
 
@@ -157,13 +165,13 @@ hk 是成像核，λk≥0 是相应权重，星号表示卷积。它的计算顺
 
 单个相干源点产生的 T 至多为秩一，只需要一个非零模态。源点增多时，独立模态数可能增加，但不会必然等于采样点数。不同源点的响应可以高度相关。这是压缩可能有效的原因，也说明“总用几个核就够了”没有普遍保证。
 
-这条分解路线有更早的理论基础。1990 年代，研究者讨论了部分相干系统的最优相干近似（Pati 与 Kailath，1994），随后又详细展开 SOCS 的数值实现，将其用于快速 OPC 计算（Cobb，1998）。
+这条分解路线有更早的理论基础。1990 年代，研究者讨论了部分相干系统的最优相干近似[[3]](https://doi.org/10.1364/JOSAA.11.002438)，随后又详细展开 SOCS 的数值实现，将其用于快速 OPC 计算[[4]](https://www2.eecs.berkeley.edu/Pubs/TechRpts/1998/8059.html)。
 
 保留全部离散模态时，SOCS 与同一张离散 TCC 等价。按特征值大小只留下前 K 个模态，才在这一步引入截断近似。
 
 在保持原有归一化、不重新校准的前提下，丢掉的图像贡献为
 
-I(x)−IK(x)=∑k>Kλk∣(hk∗M)(x)∣2≥0
+$$ I(\mathbf x)-I_K(\mathbf x)=\sum_{k>K}\lambda_k|(h_k*M)(\mathbf x)|^2\ge0. $$
 
 这个式子给出了一个实用结论。单纯删除这些非负模态贡献，会使该模型的光强逐点不增。但它没有说明边缘会统一向哪个方向移动，更没有包含输入不准、薄掩模失效等其他误差。
 
@@ -173,11 +181,11 @@ I(x)−IK(x)=∑k>Kλk∣(hk∗M)(x)∣2≥0
 
 假设边缘沿法向坐标 x 满足 I(x)=T，T 是一个固定曝光条件下的清除阈值。光强有小误差 δI，阈值有小变化 δT，将新边缘处的光强做一阶展开
 
-I(x)+∂nIδx+δI≈T+δT
+$$ I(x)+(\partial_n I)\delta x+\delta I\approx T+\delta T. $$
 
 消去原来的 I(x)=T，就得到
 
-δx≈δT−δI∂nI
+$$ \delta x\approx\frac{\delta T-\delta I}{\partial_n I}. $$
 
 阈值不变时，分子只剩 −δI。只要局部梯度非零、扰动足够小，同样的强度误差在较缓的边坡上就会造成更大的位置误差。
 
@@ -187,15 +195,17 @@ I(x)+∂nIδx+δI≈T+δT
 
 现在回到最初的问题。增加 SOCS 核，改善的是已有光学算子的数值表示。如果缺少某种物理，即使把全部核都保留，它也不会自行出现。
 
+## 像差、偏振、三维掩模与杂散光改变了什么
+
 真实设备效应必须回到相应的物理位置去加入。
 
 先看像差。前面两束波的例子里，相对相位 ϕ 改变，条纹就会移动。物镜像差的作用，可以理解为对不同衍射波施加不同的相位变化。
 
 将光瞳写成
 
-P(f)=A(f)exp⁡ ⁣[i2πλ0W(f)]
+$$ P(\mathbf f)=A(\mathbf f)\exp\!\left[i\frac{2\pi}{\lambda_0}W(\mathbf f)\right]. $$
 
-A 描述光瞳范围及振幅透过率，W 是以长度表示的波前光程差。离焦和像差可以按一致的约定进入相位，像差常用 Zernike 多项式展开（Mack，Inside PROLITH）。
+A 描述光瞳范围及振幅透过率，W 是以长度表示的波前光程差。离焦和像差可以按一致的约定进入相位，像差常用 Zernike 多项式展开[[9]](https://www.lithoguru.com/scientist/litho_papers/Inside_PROLITH.pdf)。
 
 把这个光瞳代入 TCC，交叉项中的相位由两处波前的差 W(f1+s)−W(f2+s) 决定。这正是两束波相对相位的推广。
 
@@ -209,11 +219,11 @@ A 描述光瞳范围及振幅透过率，W 是以长度表示的波前光程差�
 
 矢量电场的交叉项为
 
-∣E1+E2∣2=∣E1∣2+∣E2∣2+2Re⁡(E1⋅E∗2)
+$$ |\mathbf E_1+\mathbf E_2|^2=|\mathbf E_1|^2+|\mathbf E_2|^2+2\operatorname{Re}(\mathbf E_1\cdot\mathbf E_2^*). $$
 
 对于线偏振波，若两个电场方向平行，方向重叠因子为一；若方向正交，内积为零，交叉项消失。在两波例子里，这意味着两束光各自的强度可以不变，而明暗起伏发生变化。
 
-高 NA 包含较大的传播角度。电磁波的电场又必须满足与传播方向相关的约束，因此各衍射波的电场方向不能一概当成平行。两束平面波的横电 TE（Transverse Electric）、横磁 TM（Transverse Magnetic）偏��成像就是一个具体例子，它展示了��向关系怎样影响对比度（Mack，2005）。
+高 NA 包含较大的传播角度。电磁波的电场又必须满足与传播方向相关的约束，因此各衍射波的电场方向不能一概当成平行。两束平面波的横电 TE（Transverse Electric）、横磁 TM（Transverse Magnetic）偏振成像就是一个具体例子，它展示了方向关系怎样影响对比度[[1]](https://doi.org/10.59490/tb.91)。
 
 这里的 ∣E∣2 用来说明场强及局部各向同性吸收中的干涉结构；一般高 NA 能流还要按完整电磁场定义处理。实际矢量模型需要跟踪场分量、偏振变换和光源的偏振统计。
 
@@ -225,29 +235,29 @@ A 描述光瞳范围及振幅透过率，W 是以长度表示的波前光程差�
 
 为了看出它怎样影响算法，可以把严谨求解获得、去掉入射载波后的等效出射频谱记作 ^Ms。标量示意式随之变成
 
-I(x)=∫S(s)∣F−1 ⁣[^Ms(f)P(f+s)]∣2ds
+$$ I(\mathbf x)=\int S(\mathbf s)\left|\mathcal F^{-1}\!\left[\widehat M_{\mathbf s}(\mathbf f)P(\mathbf f+\mathbf s)\right](\mathbf x)\right|^2\,\mathrm d\mathbf s. $$
 
 这个记号只表示随角度变化的响应，并未假定它仍是局部薄掩模透过率。关键变化在下标 s。展开模平方以后，掩模响应也留在光源积分里面，无法再原样提到积分外。
 
 这就解释了为什么掩模三维效应会影响经典 TCC 的复用方式。此前能把光源与光瞳提前合并，依赖于所有源点共享同一份掩模描述；角度依赖破坏了这层简单分离。
 
-可以逐源点使用严谨响应，也可以对角度依赖分组或展开，建立更多通道，再推导新的快速表示。2025 年一项兼容三维掩模的全矢量 Hopkins 工作，就结合了角度相关掩模响应、矢量传播和多维 TCC（Guo 等，2025）。
+可以逐源点使用严谨响应，也可以对角度依赖分组或展开，建立更多通道，再推导新的快速表示。2025 年一项兼容三维掩模的全矢量 Hopkins 工作，就结合了角度相关掩模响应、矢量传播和多维 TCC[[7]](https://doi.org/10.1364/OPTICA.565511)。
 
 这条前沿与早期理论有直接联系。沿用频率交叉项的组织方式，同时扩大需要保留的响应维度，再寻找可计算的压缩方法。模型复杂度的增加，是为了容纳此前省略的物理相关性。
 
 最后看 flare，也就是散射杂光。
 
-有一部分光通过散射形成较宽的光晕。早期研究已经用镜头散射光晕来估计不同掩模带来的 flare，并讨论了测量方法（Kirk，1994）。
+有一部分光通过散射形成较宽的光晕。早期研究已经用镜头散射光晕来估计不同掩模带来的 flare，并讨论了测量方法[[8]](https://doi.org/10.1117/12.175451)。
 
 为了单独看清这种作用，可以用一个能量归一化的教学近似
 
-Ieff=(1−η)I0+η(Kf∗I0)
+$$ I_{\mathrm{eff}}=(1-\eta)I_0+\eta(K_f*I_0). $$
 
 η 为散射通道的能量比例，Kf 是积分为一的宽核。这个式子假设相应散射可在强度层面作局部平移不变的处理。
 
 回到我们的条纹，令 I0=ˉI+Bcos⁡(2πfx)。如果散射核宽到足以把许多条纹周期平均掉，卷积项就接近 ˉI，从而
 
-Ieff≈ˉI+(1−η)Bcos⁡(2πfx)
+$$ I_{\mathrm{eff}}\approx\overline I+(1-\eta)B\cos(2\pi f x). $$
 
 平均强度保持，明暗起伏降低。局部亮区的一部分能量被分散到了更大范围。这解释了为什么 flare 会降低对比度，也解释了为什么它与布局上下文有关。
 
@@ -269,7 +279,7 @@ Ieff≈ˉI+(1−η)Bcos⁡(2πfx)
 
 模型已经写到这一步，为什么仍需要校准？
 
-因为这些方程里还需要真实数值。设备波前、光源分布、掩模材料和几何、散射分布，都要通过测量或反演确定。机台和测试晶圆数据也被明确列为模型校准的依据（ASML，计算光刻说明）。
+因为这些方程里还需要真实数值。设备波前、光源分布、掩模材料和几何、散射分布，都要通过测量或反演确定。真实参数的量测、校准与独立预测检验，必须与方程求解一起完成。Mack 对校准方法的研究讨论了输入误差和稳健回归，说明这一步需要观测模型与统计假设。[[10]](https://doi.org/10.1117/12.728961)
 
 更麻烦的是，不同参数有时会在有限数据上产生相似作用。偏振变化和 flare 都可能压低某个条纹的调制度；光强的偏差也可能被清除阈值的变化部分抵消。刚才的边缘公式已经说明，如果一个校准点上 δT 接近 δI，边缘位置几乎不动。
 
@@ -284,3 +294,72 @@ Ieff≈ˉI+(1−η)Bcos⁡(2πfx)
 从光学分布走到晶圆轮廓，还必须说明材料响应。本文使用的阈值关系，把吸收、反应、扩散和显影压缩成了一个边缘判据。它便于计算，却有自己的适用范围。即使光场已经算准，这层近似仍可能成为轮廓误差的来源。
 
 因此，面对一个新增的模型项，可以沿着本文的计算链追问。它改变了掩模响应、传播与干涉，还是光强到轮廓的映射？它的参数由什么数据确定，误差又在哪些条件下被验证？把这些问题回答清楚，才能判断一次“加项”究竟提高了预测能力，还是只让已有的校准点拟合得更好。
+
+
+## 用一个可识别性问题看清“拟合得到什么”
+
+把第 $i$ 个量测写成 $y_i=g_i(\boldsymbol\theta)+\epsilon_i$，其中 $\boldsymbol\theta$ 包括需要估计的物理与紧凑模型参数，$\epsilon_i$ 包括随机量测误差。最简单的加权校准为
+
+$$
+\widehat{\boldsymbol\theta}=\arg\min_{\boldsymbol\theta}
+\sum_i\frac{[y_i-g_i(\boldsymbol\theta)]^2}{\sigma_i^2}
++\lambda R(\boldsymbol\theta).
+$$
+
+只有在独立、近似高斯且方差已知等条件下，这个二次损失才直接对应常见的最大似然解释。SEM contour 上相邻点的误差往往相关；同一个 die 的 focus 和 dose 也可能共同漂移，不能把密集采样点全当成独立数据。[[10]](https://doi.org/10.1117/12.728961)[[11]](https://doi.org/10.1117/12.2218534)
+
+以前文阈值 $D I=T$ 为例。如果同时把光强的整体尺度乘 $a$、把阈值也乘 $a$，轮廓完全不变。只观测轮廓时，这两个尺度不能分别被确定。这是结构性的不可识别性，增加同类 CD 点不会解决它。必须固定归一化约定，或者引入独立剂量、吸收率或清除阈值数据。
+
+实际问题还存在近似不可识别。局部线性化为
+
+$$
+\Delta\mathbf y\approx J\Delta\boldsymbol\theta,
+\qquad J_{ij}=\frac{\partial g_i}{\partial\theta_j}.
+$$
+
+对经过量测噪声归一化的 Jacobian 做奇异值分解 $W^{1/2}J=U\Sigma V^\mathsf T$。若某个奇异值很小，对应的参数组合明显变化，量测预测却几乎不动。拟合器仍能返回一个数值，但这个数值可能随初值、样本或微小噪声大幅变化。
+
+这说明一个常见误读为什么危险：**把扩散长度拟合成某个值，不等于已经独立测到了材料的扩散系数。** 若光学模糊、电子传播、PEB 与计量模糊都能让边缘变钝，紧凑模型中的一个 Gaussian 宽度可能吸收了它们的组合效应。只有实验能把这些来源区分开，物理命名才具有对应的辨识证据。多组 NA、pitch 和 feature 共同校准一组参数，是增加区分力的一条公开研究路线。[[12]](https://doi.org/10.1016/S0167-9317(02)00438-0)
+
+实验设计可以据此有目的地展开，而不是只追求点数。改变 pitch 检验频率依赖，旋转图形检验方向依赖，改变焦点检验相位相关响应，改变远处明暗背景检验长程 flare，PEB split 检验反应扩散，mask bias split 检验掩模误差传递。每个 split 都应配合重复曝光或重复量测，先估计噪声，才知道观察到的差别是否超出噪声水平。
+
+正则化能压制不稳定方向，例如限制非物理参数、惩罚核振荡或保持系数稀疏。它引入的是额外先验或工程偏好，不能创造缺失的实验信息。若不同先验给出相近训练残差、不同外推结果，就应把这种模型不确定性写进报告，而不是只报其中最漂亮的一次拟合。
+
+## 怎样判断“加了一个项”确实有用
+
+第一步先固定物理输入，检查纯数值误差。源点采样、像面网格、计算区域和 SOCS 模态都要分别收敛；只改变一个因素，比较空中像、EPE 和优化梯度。如果模型是 ILT 的内循环，梯度误差同样可能改变最终掩模。前向图像看起来接近，并不保证优化方向已经稳定。
+
+第二步再估计参数，并且把调参用的数据与最终检验数据分开。相邻的 clip、同一重复 cell 的不同 gauge、同一 FEM 中强相关的样本若随机拆分到训练和验证两边，会夸大泛化表现。更严格的 holdout 可以按图形家族、整片 wafer 或某个 process split 分组；具体分组应服从最终要预测的新情况。
+
+第三步看残差的结构。总体 RMS 是 $\sqrt{N^{-1}\sum_i r_i^2}$，它会被大量容易样本主导。应同时看各 pitch、方向、二维图形、焦点与剂量分箱的均值、尾部、最大 EPE 和失败类别。假如线端持续向同一方向偏，而大多数长直边拟合很好，平均 RMS 的下降没有消除这个系统误差。
+
+第四步进行模型比较。基础模型与扩展模型必须使用同一量测定义、同一数据拆分、同一数值精度。比较独立验证误差是否改善、参数是否稳定，以及整个多条件验证的运行时间是否可接受。光学新增项若只在训练集有效，需要继续判断它是吸收量测偏差，还是提供了可迁移的物理响应。[[10]](https://doi.org/10.1117/12.728961)[[11]](https://doi.org/10.1117/12.2218534)
+
+第五步检查观测本身。真正的前向关系更接近
+
+$$
+\mathbf y_{\mathrm{SEM}}
+=\mathcal H\!\left(\mathcal F(M;\boldsymbol\theta);\boldsymbol\phi\right)
++\boldsymbol\epsilon,
+$$
+
+$\mathcal F$ 预测物理轮廓，$\mathcal H$ 表示 SEM 成像、扫描、边缘抽取和 CD 定义，$\boldsymbol\phi$ 是计量参数。若把 SEM 量测值直接当成没有偏差的真实边界，材料模型就可能替计量模型背负误差。Mack 等在 metrology-aware calibration 中把这层观测关系显式纳入，说明“晶圆数据”也需要一条可检验的产生链。[[11]](https://doi.org/10.1117/12.2218534)
+
+最终合格的模型应能回答三件可复查的事：在固定输入下数值误差有多小，参数由哪些独立信息约束，对哪些未参与拟合的图形和条件验证过预测能力。严格电磁求解、紧凑表示和实验拟合分别承担这些任务，三者共同决定模型能被信任到哪里。
+
+## 参考文献与图片出处
+
+教材支持基础光学；原始论文支持相应的计算和校准方法。文中的两波展开、半正定证明、局部边缘误差和奇异值分析为明确假设下的推导。网页访问日期均为 2026-10-25。
+
+1. Sander Konijnenberg, Aurèle J. L. Adam, H. Paul Urbach. *BSc Optics*, 2nd ed. TU Delft Open, 2024. [DOI:10.59490/tb.91](https://doi.org/10.59490/tb.91)。第 5 章相干与干涉、第 6 章衍射；图 5.8 与 6.18 以 CC BY 4.0 许可裁切使用。
+2. H. H. Hopkins. “On the diffraction theory of optical images.” *Proceedings of the Royal Society A*, 217:408–432, 1953. [DOI:10.1098/rspa.1953.0071](https://doi.org/10.1098/rspa.1953.0071)。
+3. Y. C. Pati, T. Kailath. “Phase-shifting masks for microlithography: automated design and mask requirements.” *JOSA A*, 11(9):2438–2452, 1994. [DOI:10.1364/JOSAA.11.002438](https://doi.org/10.1364/JOSAA.11.002438)。
+4. Nicolas B. Cobb. *Fast Optical and Process Proximity Correction Algorithms for Integrated Circuit Manufacturing*. PhD dissertation, University of California, Berkeley, 1998. [大学原始记录及全文](https://www2.eecs.berkeley.edu/Pubs/TechRpts/1998/8059.html)。
+5. S. Burger, R. Köhle, L. Zschiedrich, et al. “Rigorous Simulation of 3D Masks.” *Proceedings of SPIE*, 6349:63494Z, 2006. [作者预印本 physics/0610218](https://arxiv.org/abs/physics/0610218)。
+6. J. Pomplun, S. Burger, F. Schmidt, et al. “Rigorous FEM-Simulation of EUV-Masks: Influence of Shape and Material Parameters.” *Proceedings of SPIE*, 6349:63493D, 2006. [DOI:10.1117/12.686828](https://doi.org/10.1117/12.686828)，[作者预印本](https://arxiv.org/abs/physics/0610236)。
+7. Shaopeng Guo, Haofeng Chen, Chunxiao Mu, et al. “Mask3D-compatible full-vectorial Hopkins imaging for lithographic modeling.” *Optica*, 2025. [DOI:10.1364/OPTICA.565511](https://doi.org/10.1364/OPTICA.565511)，[作者机构说明](https://pirc.hust.edu.cn/info/1015/2862.htm)。
+8. Joseph P. Kirk. “Scattered light in photolithographic lenses.” *Proceedings of SPIE*, 2197:566–572, 1994. [DOI:10.1117/12.175451](https://doi.org/10.1117/12.175451)。
+9. Chris A. Mack. *Inside PROLITH: A Comprehensive Guide to Optical Lithography Simulation*. FINLE Technologies, 1997. [作者发布的教材 PDF](https://www.lithoguru.com/scientist/litho_papers/Inside_PROLITH.pdf)。本文仅引其模型说明，未复制该教材图片。
+10. Chris A. Mack. “Improved methods for lithography model calibration.” *Proceedings of SPIE*, 6607:66071D, 2007. [DOI:10.1117/12.728961](https://doi.org/10.1117/12.728961)，[作者全文](https://www.lithoguru.com/scientist/litho_papers/2007_156_Improved%20Methods%20for%20Lithography%20Model%20Calibration.pdf)。
+11. Chris A. Mack, John L. Sturtevant, Yun Deng, et al. “Modeling metrology for calibration of OPC models.” *Proceedings of SPIE*, 9778, 2016. [DOI:10.1117/12.2218534](https://doi.org/10.1117/12.2218534)，[作者全文](https://lithoguru.com/scientist/litho_papers/2016_Modeling_Metrology_for_OPC.pdf)。
+12. J. Byers, C. Mack, R. Huang, S. Jug. “Automatic calibration of lithography simulation parameters using multiple data sets.” *Microelectronic Engineering*, 61–62:89–95, 2002. [DOI:10.1016/S0167-9317(02)00438-0](https://doi.org/10.1016/S0167-9317(02)00438-0)。

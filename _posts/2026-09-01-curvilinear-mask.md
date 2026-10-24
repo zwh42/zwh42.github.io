@@ -6,212 +6,185 @@ title: "曲线掩模走到哪一步了"
 date: 2026-09-01 21:08:00 +0800
 tags: [光刻, 曲线掩模, ILT, 计算光刻]
 author: 端点星日志
-description: "从 ILT、多束写入到原生曲线 OPC、MRC 与掩模工艺校正，梳理曲线掩模四十年演进和仍未闭合的软件链。"
+description: "从曲线几何与嵌套逆问题出发，系统分析 ILT、多束写入、MRC、MPC、格式公差、EUV 三维效应及轮廓签核。"
 source_url: "https://mp.weixin.qq.com/s/uozNDwe3Sw_TvHhscfZ_kw"
 toc: true
+last_modified_at: 2026-10-25
+mathjax: true
 ---
 
-一条曲线从 OPC 软件走到晶圆上，至少会换四次身份。
+*2026-10-25 修订 · [计算光刻阅读路线](/lithography/)*
 
-在求解器里，它可能是一张连续灰度场的零等值线，也可能由 Bézier 或 B 样条控制点定义。写进 OASIS 文件时，它常被采样成密集的折线多边形。到了多束电子束写入机里，它又变成像素剂量图。掩模显影和刻蚀以后，设备得到的是一条带着圆化、局部偏差和线边粗糙度的物理轮廓。最后，EUV 扫描器看到的还是一个会产生三维电磁散射的结构。
+一条曲线从 OPC 软件走到晶圆上，会经过几种并不等价的表示：求解器里的隐式边界或样条、交换文件里的多边形、电子束写入机里的剂量像素、显影和刻蚀后的实际掩模轮廓，以及扫描器接收到的三维电磁散射体。
 
-这几条曲线看起来相近，对软件链却未必等价。一次采样、一次平滑、一次几何清理，都可能拿走一点本来留给晶圆 EPE 的误差预算。
+每次转换都可能消耗边缘放置误差（EPE）预算。因此，曲线掩模的工程问题不是能否画出圆润的形状，而是**同一条边界能否在优化、数据交换、制造和验证之间保持可追踪的物理含义**。
 
-曲线掩模近几年重新升温，原因也在这里。ILT 算法、多束掩模写入、GPU 计算和曲线 Mask Process Correction（MPC，掩模工艺校正）分别打通了链条上的一段。进入量产讨论以后，问题从“能不能画出曲线”转向“这条曲线能否稳定地穿过整条数据和制造流程”。
+本文把三个问题分开：自由曲线为什么可能改善晶圆图形，多束写入到底解除什么约束，以及要用哪些证据判断一个方案接近生产。文献中的商业产品和特定实验说明技术可行性，不自动证明所有工艺层都已经采用。
 
-## 曲线并非 ILT 的同义词
+## 曲线几何、OPC 与 ILT 是三个不同概念
 
-Curvilinear mask 常被直接写成 ILT mask，两者其实不能画等号。
+OPC 是为了补偿邻近效应而修改掩模的任务；ILT 是用光刻前向模型求解逆问题的一类方法；curvilinear 描述的是输出形状。ILT 可以输出经过矩形化的掩模，边缘式 OPC 也可以直接优化曲线，因此两者没有一一对应关系。
 
-ILT 是一种求解方式。它从目标晶圆图形出发，通过正向光刻模型反复计算，寻找能让晶圆轮廓最接近目标的掩模。曲线则是一种几何表示。ILT 可以在输出端被 Manhattan 化，传统 edge-based OPC 也可以把水平和垂直边扩展成曲线控制点，得到平滑轮廓。
+![光学邻近效应修正的设计、掩模与成像示意](/assets/images/references/optical-proximity-correction.png)
 
-这一区分很重要。它把算法能力和制造能力分开了。论文里出现一张自由形状 mask，只能说明优化器找到过这样的解。若要说一项曲线掩模技术已经落地，还要继续问文件能否承载、MRC 能否检查、MPC 能否补偿、writer 能否按时写完、计量和检查能否给出可复现的验收结果。
+*图 1：LithoGuy，Optical proximity correction（2010），[Wikimedia Commons 原文件页](https://commons.wikimedia.org/wiki/File:Optical_proximity_correction.png)，作者释入公有领域（public domain），未修改。该图是 OPC 几何原理示意，既不是 SEM 数据，也不是本文所讨论的曲线掩模制造结果。访问日期：2026-10-25。*
 
-## 四十多年走过三段路
+目标晶圆图形通常含有直角，但投影光学系统带宽有限，高频几何细节不能原样传到像面。允许掩模边界自由弯曲，相当于增加了一组可调的衍射自由度：优化器可以调整不同频率和方向的复振幅，使光强等值线在目标边缘附近有合适位置与斜率。
 
-曲线掩模的数学源头可以追到 inverse mask design，而它的制造史要晚得多。
+这里没有“越像目标越好”的原则。掩模上的弧形突起、凹口和辅助图形，可能恰恰是为了让晶圆上的直线更直、线端更完整。反过来，视觉上平滑的掩模也未必有更大的工艺窗口。必须把它放回同一套 optical/resist model，检查焦点、剂量和掩模误差变化后的预测。
 
-1981 年，Bahaa Saleh 和 Soheil Sayegh 用迭代的像素翻转寻找优化原始掩模。这篇论文通常被视作 ILT 的早期起点。原论文记录
+Pang 等的 2021 年论文给出曲线 ILT、多束写入、写后掩模与晶圆曝光之间的实际关联；它比一张孤立的优化截图更接近完整证据链。该论文的具体设备、材料和测试图形仍然限定了结论范围。[[1]](https://design2silicon.com/wp-content/uploads/2021/11/JM3-21046SS_online.pdf)
 
-1990 年代，Yong Liu 和 Avideh Zakhor 系统讨论 binary 和 phase-shifting mask 的逆向设计。进入 2000 年代以后，level-set、连续像素优化和梯度方法逐渐成熟。Level-set 的价值很直接。边界可以自然地移动、分裂和合并，求解器不用预先规定每一个 serif 和 SRAF 应该长在哪里。2005 至 2006 年，首批 ILT 产品论文、65 nm tape-out 和 full-chip 讨论集中出现。Pang 2021 年的 ILT 历史综述
+## 从理想逆问题开始，再加入制造条件
 
-这时的主要障碍有三个。全芯片求解太慢，分块会留下 stitching 问题，VSB 掩模写入机又要把曲线打碎成大量矩形或梯形 shot。数学上很漂亮的 mask，到了写入端可能贵得无法接受。制造规则往往还在优化之后才介入，几何清理又会损失一部分工艺窗口。
+设 $T$ 为晶圆目标，$M$ 为理想掩模，$\mathcal F_c$ 是条件 $c$ 下的光学—胶模型。一个标称逆问题可以写成
 
-2010 年前后，业界已经用 VSB 试写 wavy metal 和曲线 assist feature，但 shot count 仍是硬约束。多束掩模写入随后改写了这个约束。
+$$
+\min_M D\!\left(\mathcal F_{c_0}(M),T\right).
+$$
 
-IMS 在 2011 年完成了一台 262,144 束的 proof-of-concept 工具。2012 年公开的论文给出了 20 nm beam、`82 μm × 82 μm` 阵列场和第一批写入结果，并把生产工具排到 2016 年。IMS 2012 年 POC 论文 IMS 的公司历史如今记录了 2014 年 commercial alpha 和 2016 年起的 production deliveries。IMS 公司历史
+只优化标称误差可能得到狭窄工艺窗口。更合理的工程目标会覆盖焦点、剂量及其他已定义条件：
 
-多束写入把数十万束固定小 beam 并行开关，写入时间对图形复杂度的敏感性显著下降。NuFlare 当前列出的 MBM-2000 和 MBM-2000PLUS 面向 3 nm 与 3 nm+ design rule，页面同时强调设备要处理 terabyte 级数据。NuFlare 当前产品页 这组事实很能说明问题。曲线造成的负担没有消失，它从 VSB shot 数转移到了 rasterization、剂量计算、数据通路和校准。
+$$
+\min_M\;\sum_{c\in\mathcal C}w_cD\!\left(\mathcal F_c(M),T\right)
++\lambda R_{\mathrm{shape}}(M),
+\qquad M\in\mathcal A_{\mathrm{mask}}.
+$$
 
-第三段路发生在 2019 年以后。GPU 和专用全芯片架构把 curvilinear ILT 的公开演示推进到一至两天量级。OPC、ILT、MRC、MPC 和 fracture 也开始围绕原生曲线改造。2022 年，Micron 在 DRAM 和 NAND 的公开演示中讨论 DUV 与 EUV 曲线 mask，并给出一个 DRAM array 例子，作者报告曲线方案相对矩形方案约有 10% 的 wafer CD uniformity 改善。同一份材料也明确写出，full-curvilinear tapeout 所需基础设施仍要继续推进。Micron 2022 年演示文稿
+$\mathcal A_{\mathrm{mask}}$ 是可制造掩模集合，至少约束最小宽度、最小间距、局部曲率、孤立碎片与拓扑；$R_{\mathrm{shape}}$ 则可以抑制不稳定的边界振荡。约束和正则化不是同一个东西：一个小权重惩罚不能保证没有违规，最终还需要独立 MRC。
 
-到 2025 年，Micron、NuFlare 和 D2S 又公开了全版图在线线性校正结果。材料最后采用的措辞是 Micron 已开始把 PLDC-MPC 纳入生产 qualification。四类测试结构里，PLDC 在三类上表现更好，dark pillar 仍有一种离线 MPC 更优。Micron 2025 年演示文稿
+平均加权损失也可能牺牲少数关键图形。若某个极端焦点必须合格，可以增加最大误差约束 $D_c\le\tau_c$，或用 $\max_c D_c$ 构造稳健目标。条件集只是对真实波动的离散近似，不能因为跑了若干 corners 就声称覆盖了全部概率尾部。
 
-这是一条比“已经量产”更有价值的进展。它给出了 qualification 的位置，也保留了尚未被一种方法统一解决的图形差异。
+更接近实物的关系还要把掩模制造写进去：
 
-## 今天走到哪一层
+$$
+M_{\mathrm{phys}}=\mathcal P(G,\mathbf d;\boldsymbol\psi),
+\qquad C_{w,c}=\mathcal F_c(M_{\mathrm{phys}}).
+$$
 
-截至 2026 年 8 月，公开资料支持下面这幅图景。
+$G$ 是交付几何，$\mathbf d$ 是电子束剂量图，$\mathcal P$ 包含写入、掩模胶、显影和刻蚀，$\boldsymbol\psi$ 是掩模工艺参数。OPC 求的是晶圆目标，MPC 求的是把交付数据制造成所需物理掩模。两者是嵌套的逆问题。若前者假设理想曲线，后者只能近似制造，必须把后者的偏差重新传回晶圆模型。
 
-| 环节 | 已公开进展 | 仍需闭合的问题 |
+## 曲线怎样表示，决定优化器能改什么
+
+像素式方法直接优化二维场，随后用阈值或投影生成边界；level-set 用一个标量场的零等值线表示边界，便于自然地分裂和合并；样条方法直接优化控制点，可以用较少变量描述长而平滑的轮廓。它们的计算成本、拓扑能力和约束难度不同。
+
+以 B 样条为例，边界为
+
+$$
+\mathbf C(u)=\sum_i N_{i,p}(u)\mathbf P_i.
+$$
+
+控制点少，几何紧凑但可能表达不了局部热点；控制点太密，优化器更容易追逐模型误差，产生短波起伏。对弧长 $s$ 参数化的平面曲线，可以使用
+
+$$
+R_{\mathrm{bend}}=\int\kappa(s)^2\,\mathrm ds
+$$
+
+作为弯曲正则项。它偏好平滑，却不直接保证最小线宽、最小间距或无自交。两段各自很平滑的边，仍能相互靠得过近。闭合轮廓、孔洞、邻接关系和轮廓方向，也必须由几何内核一致处理。
+
+控制点在数学上彼此独立，并不代表晶圆响应局部独立。一个点的移动会改变一段边界，衍射又把这段变化耦合到邻域。可用链式法则连接几何与光刻梯度：
+
+$$
+\frac{\partial J}{\partial\mathbf P_i}
+=\int_{\partial M}\frac{\delta J}{\delta n(s)}
+\frac{\partial n(s)}{\partial\mathbf P_i}\,\mathrm ds.
+$$
+
+前一项来自光刻模型的形状敏感度，后一项来自曲线基函数。优化在何处加控制点，应同时考虑局部曲率、EPE 和敏感度，而不能只对所有边做等间距加密。曲线处理进入 OPC 主流程的公开研究，正是在处理这种几何自由度与制造约束之间的连接。[[2]](https://doi.org/10.1117/1.JMM.23.1.011203)
+
+## 为什么多束写入改变了经济性，却没有消除制造约束
+
+可变成形束（VSB）把复杂轮廓切分为可写的 shot。曲线被逼近得越精细，通常需要越多或更复杂的分割；写入负担与 shot 数、剂量、重叠及设备模式有关。于是“光学上最好的形状”可能在写入时间或掩模误差上付出很高代价。
+
+多束掩模写入（MBMW）使用大量并行小电子束，在像素域调制曝光。IMS 的官方产品文档列出 512×512 个可编程束的架构；这说明图形的复杂度可以主要转化成数据和剂量计算问题，而不再直接等价于 VSB 的 shot 数增长。[[3]](https://www.ims.co.at/en/products/)
+
+但“曲线不额外增加写入时间”必须附带条件。它通常比较同一写入模式、同一面积、相近剂量与扫描策略下的不同几何复杂度。更高剂量、更小像素、更严格精度、更多 pass 或校准成本，仍可能改变总时间。不能把它扩写成不受任何工艺约束的恒定制造成本。[[1]](https://design2silicon.com/wp-content/uploads/2021/11/JM3-21046SS_online.pdf)[[3]](https://www.ims.co.at/en/products/)
+
+电子束前向和背散射、掩模胶响应、显影与刻蚀都没有因为并行束而消失。像素的剂量量化、束间一致性、数据吞吐与校准还会留下新的误差来源。多束写入解除的是一种重要的几何复杂度瓶颈，而不是 Maxwell 方程之后所有问题。
+
+因此完整 turnaround time 应至少拆成：光刻求解、MRC/MPC、数据转换和 rasterization、传输、电子束曝光、工艺与检查。某个主循环快了多少，不能直接当作一张合格掩模交付周期缩短了多少。
+
+## MRC 要检查连续几何，也要检查可稳定制造的邻域
+
+传统规则经常用矩形角点或有限方向距离描述。曲线边界上方向连续变化，最小距离可能出现在两个采样点之间，高曲率处也可能没有一个显眼的角。若只检查离散顶点，很容易漏掉真正的窄颈。
+
+几何层面至少要考虑三类条件：内侧最小宽度、外侧最小间隙，以及局部最小曲率半径。用一定半径的圆盘在内外边界附近滚动，是理解这些约束的一种方法；但实际规则还可能要求危险距离持续一定弧长，以区分孤立的接近与可持续的窄缝。不同 mask shop 的验收规则仍应明确配置，不能把一个教学定义宣称为统一标准。
+
+MRC-aware ILT 的研究把规则相关信息提前放入优化，减少最后再删除碎片、磨平尖点造成的图形损失。[[4]](https://design2silicon.com/wp-content/uploads/2020/08/111480T-2019.pdf) 但是只要做过 cleanup，就已改变 $M$。正确闭环应重新计算晶圆多条件结果，再决定是否需要优化；不能沿用 cleanup 之前的签核报告。
+
+另一种风险来自几何公差。如果优化器、检查器与 writer 对“同一条曲线”各用不同离散化，检查通过的对象可能并不是最终制造的对象。所有接口都应记录坐标单位、取整规则、距离定义和最大逼近误差。
+
+## 格式是一项精度预算，而不仅是文件大小
+
+用分段直线（PWL）逼近圆弧，若半径为 $r$、弦长为 $\ell$，最大弦高误差为
+
+$$
+\epsilon=r-\sqrt{r^2-(\ell/2)^2}
+\approx\frac{\ell^2}{8r}\qquad(\ell\ll r).
+$$
+
+给定允许误差 $\epsilon$，采样长度应大致满足 $\ell\lesssim\sqrt{8r\epsilon}$。同样公差下，小半径区域需要更密采样。这是几何推导，不是任何设备的精度承诺，也不是把 mask-plane 误差直接当作 wafer-plane EPE。
+
+从掩模误差到晶圆误差还需通过局部光刻增益。若缩小倍率为 $R$，局部 MEEF 为 $m$，很粗略的一阶关系是 $\lvert\delta x_w\rvert\sim m\lvert\delta x_m\rvert/R$。二维曲线的响应还与方向、焦点和邻域有关，因此分配格式公差时应使用代表性图形仿真，不能只除以缩小倍率。[[5]](https://doi.org/10.1109/66.843639)
+
+多次转换的误差也不能天然平方相加。rounding、offset、重新拟合常常带有同向偏差；保守上界应先考虑各段最大误差相加，再用实测或统计证明能否放松。若某次转换引起拓扑变化，例如窄颈消失，局部小扰动近似已经失效。
+
+SEMI P49 为 P39 引入实验性 curvilinear multigon 扩展，以 spline 控制点传递曲线。SEMI 的 2023 年说明与标准商店摘要都强调其目标是减少插值和信息损失，同时说明与原 P39 reader 的兼容限制。[[6]](https://store-us.semi.org/products/p04900-semi-p49-specification-for-experimental-curvilinear-multigon-extension-to-semi-p39) 本文核查时，商店同时保留 Preliminary/Current 标记和原定 2025 年撤下的通知；这类网页状态不能作为“整个产业已统一格式”的证据。
+
+实际交付更应建立互操作测试：同一基准曲线经过 writer A、reader B、MRC C 后，比较 Hausdorff 距离、面积差、最小间距与拓扑是否一致。用文件哈希能证明字节没变，证明不了两个工具对曲线语义的解释一致。
+
+## EUV 与 High-NA 让二维曲线重新面对三维物理
+
+曲线是一种二维几何描述，而 EUV 掩模是反射式多层膜与吸收体构成的三维结构。吸收体厚度、侧壁和斜入射使出射衍射场依赖方向、偏振和源点。连续曲线意味着一条边的切向方向也在连续改变，不能只给水平边和垂直边各加一个常数偏置。
+
+三维掩模电磁计算需要保留复振幅和相位。Pomplun 等用严谨有限元与散射数据反演侧壁角等几何参数，展示了形貌改变如何进入可测的衍射响应。[[7]](https://arxiv.org/abs/physics/0610236) 这类证据同时说明，几何参数需要计量约束；光学求解更严谨，不会自动让输入的侧壁角更真实。
+
+High-NA EUV 还使用非等倍率（anamorphic）成像，因此要明确曲率、间距和误差在哪个坐标系定义。一次各向异性缩放能把圆变成椭圆，也会改变切向方向与局部曲率。mask-plane 规则、wafer target 和 writer 坐标不能混用；模型验证时需在变换后的正确坐标中比较轮廓。
+
+严格求解成本推动了紧凑 Mask3D 与矢量快速成像的发展。Guo 等 2025 年工作将角度相关的掩模响应纳入全矢量 Hopkins 表述，是组织复杂响应的一种研究路线。[[8]](https://doi.org/10.1364/OPTICA.565511) 它不意味着任意曲线、任意材料堆栈都已自动获得可靠的全芯片模型；紧凑表示仍需在连续方向、曲率和邻近组合上校准与验证。
+
+## 曲线计量要从一个 CD 走向整条边界
+
+对自由曲线，平均 CD 相同可以对应完全不同的局部凹陷、凸起和线端偏差。更自然的观测是轮廓：在目标边界 $\mathbf r(s)$ 的法向 $\mathbf n(s)$ 上，比较实际边缘与目标的有符号距离 $e(s)$，再统计分位数、最大误差和按曲率或方向分箱的残差。
+
+这个定义并非处处自动成立。目标附近若有多个交点、边界自交或拓扑变化，法向对应可能不唯一；远距离失配宜补充最近距离、Hausdorff 距离或连通性判定。报告 contour EPE 时必须说明配准、平滑、抽边算法与排除条件。
+
+测量本身还包含 SEM 点扩散、边缘材料对比、束流噪声与扫描失真。把轮廓采样得更密，不会凭空增加同样多的独立信息。重复图像、不同扫描方向和计量条件有助于估计这些不确定度；算法若沿边界过度平滑，可能同时抹掉真实的高曲率制造偏差。
+
+因此至少要区分三种误差：数据库曲线到物理掩模的 mask EPE，物理掩模经过光刻到晶圆的 wafer EPE，以及量测/抽边引入的观测误差。前两者通过光刻敏感度关联，第三者决定我们能多精确地知道前两者。只报告一张彩色 contour overlay 不足以完成资格验证。
+
+## 怎样判断一项公开结果处在哪一级证据
+
+| 证据层次 | 能证明什么 | 下一步要补什么 |
 | --- | --- | --- |
-| 曲线 OPC 与 ILT | 商业工具已公开支持 native curvilinear 和 full-chip flow，论文也给出整芯片优化框架 | runtime、模型精度、stitching、MRC 入环和多工艺角收敛 |
-| 数据交换 | PWL OASIS 可交付，SEMI P49 定义实验性 spline multigon | 原生格式尚处过渡期，旧 reader 不兼容，跨工具公差仍会累积 |
-| 掩模写入 | IMS 和 NuFlare 都有商用多束 writer，VSB 也有 writer-aware co-optimization 路线 | rasterization、实时剂量计算、resist 和校准仍限制数据通路 |
-| MPC 与 MRC | CLMPC、曲线 MRC、PLDC 和 integrated pipeline 均有论文或联合验证 | 不同结构的最优方案不统一，规则定义、模型和全版图 TAT 仍在演进 |
-| 计量和检查 | contour metrology、sEPE、large field of view 和 deep check 已成为专门研究方向 | 等效 CD、缺陷判定、轮廓抽取不确定度和 HVM 吞吐量仍缺统一答案 |
-| High-NA EUV | 曲线 OPC 与 mask data preparation 已有公开研究，计算平台也把它列为目标场景 | 严格三维模型、部分相干照明、anamorphic 各向异性和 signoff 成本很高 |
+| 仿真 clip | 特定模型与图形上的可优化性 | 未见图形、多条件、不同模型验证 |
+| full-chip / full-reticle 数据处理 | 尺度、内存和运行时间的可行性 | 写后掩模精度和完整 TAT |
+| 写后 mask SEM / 计量 | 可制造性与 mask 误差 | 实际 scanner 与 wafer 结果 |
+| wafer exposure / FEM | 特定工艺的晶圆轮廓与窗口 | 产品覆盖、缺陷及可靠性统计 |
+| layer qualification | 指定层、机台、材料和版本的适用性 | 变更后的重新验证与持续监控 |
 
-因此，曲线 mask 已经越过“只有 clip 仿真”的阶段，也越过“电子束能否画出来”的阶段。它正在进入按图形、按层和按制造流程逐段 qualification 的时期。把它写成先进节点的通用默认值，公开证据还不够。
+公开论文已给出多束写入和晶圆曝光结果，商业工具也有全芯片曲线 OPC 的技术说明。[[1]](https://design2silicon.com/wp-content/uploads/2021/11/JM3-21046SS_online.pdf)[[9]](https://resources.sw.siemens.com/en-GB/technical-paper-rapid-full-chip-curvilinear-opc-for-advanced-logic-and-memory/) 这些事实支持“整条链已有实际实现”，但不能推导为“每一层都应该改成自由曲线”。实际收益取决于该层最薄弱的图形、掩模预算、模型覆盖和写入能力。
 
-## OPC 的变量变了
+一个可靠比较，应对曲线与基线方案使用相同 target、相同可制造约束、相同 focus/dose 条件和独立验证模型。除了标称 EPE，还要报告共同工艺窗口、mask error sensitivity、最坏轮廓、检查遗漏、文件与内存、端到端运行时间。接触孔改善而规则线阵无收益，或一个 mask tone 优于另一个，都应按实际范围呈现。
 
-传统 model-based OPC 很习惯一条由水平和垂直 segment 组成的边。fragmentation 决定控制边的粒度，优化器沿法向移动 edge，最后再做 MRC 和验证。
+## 最后留下的是一份可追踪的交付约定
 
-曲线 OPC 可以继续沿用边移动的思路，但变量已经从 segment 位移变成曲线控制点、切向角、弧长和局部曲率。若采用 B 样条，一段轮廓可以写成
+曲线掩模需要的交付物不仅是一份更漂亮的图形文件，还应包括原生曲线与最终 writer 数据的对应关系、每次近似的公差、MRC 规则与检查版本、MPC 参数与适用域，以及在写后掩模和晶圆上完成的验证范围。
 
-C(u)=∑iNi,p(u)Pi
+这份约定让优化器知道什么可以自由改变，让 mask shop 知道要制造哪一条边界，也让晶圆工程师知道仿真预测的是理想曲线还是实际掩模。曲线增加的自由度只有穿过这条证据链，才能转化成稳定的晶圆工艺余量。
 
-这里的 Pi 是控制点，Ni,p 是 p 次样条基函数。少量控制点就能表达长而平滑的边界，也能把相邻曲段的连续性放进数学定义。
+## 参考文献与图片出处
 
-代价随后落到几个新问题上。控制点放得太稀，局部 lithography hotspot 跟不上。放得太密，优化变量和文件尺寸又会膨胀。控制点移动还可能引起 self-intersection、窄颈或拓扑变化。曲线被转回 PWL 后，同一条理论轮廓会因为采样步长不同，得到不同的曲率、最小间距和 MRC 结果。
+网页访问日期均为 2026-10-25；文中的样条、曲率正则化、弦高与误差传递公式为一般数学表达和局部推导，并非引述某一厂商产品实现。
 
-近年的研究路线很有代表性。有人把二维边界映射成 tangent-angle 和 arc-length 函数，有人只在敏感区域动态插入控制点，也有人直接在 Bézier 或 B-spline 上做 OPC 和 MPC。共同目标都是减少无效自由度，同时保留 mask target 的几何语义。
-
-这些方向已经进入密集发表期。2025 年的 TAAL 方法把二维边界压成切向角和弧长函数，论文发表于 Optics Express。同年还有用 MLP 预测端点、GCN 调整中间控制点的 ML-guided curve correction，论文发表于 IEEE Transactions on Semiconductor Manufacturing。2026 年的 demand-driven 方法继续把控制点集中到误差敏感区，论文发表于 Optics Express。曲线 OPC 的研究焦点已经从能否移动曲线，走到怎样用更少变量取得可签核的精度。
-
-## 目标函数也不能只看 wafer EPE
-
-一个面向实际流程的曲线 mask 优化，可以抽象成下面的形式。
-
-J(M)=∑c∈CwcD ⁣(W(F(M;θc)),T)+λRcurve(M)+μRMRC(M)+νRwrite(M)
-
-F 是光学、Mask3D 和 resist 的正向模型，W 给出晶圆轮廓，T 是目标图形，C 覆盖不同 focus、dose 和工艺条件。后三项分别惩罚不稳定曲率、违反掩模规则的形状和过高的写入代价。
-
-公式本身不难，难的是这些项何时进入求解。
-
-如果 ILT 先把 wafer error 压到最低，最后再用独立 cleanup 切掉小 SRAF、磨平尖点，得到的已经是另一个 mask。OPC 或 ILT 必须重新验证，有时还要重新优化。曲线 MRC 因而越来越早地进入主循环，或者作为每轮更新后的 projection step。
-
-早期曲线 MRC 提出过 minimum manufacturable circle。一个给定半径的圆能沿图形内部和外部平滑滚过，才说明局部宽度、间距和曲率有制造余量。后来又加入 run-length 条件，避免两条曲线只在一个孤立点靠得很近就被误报。这类规则比传统 corner-to-corner 距离更接近连续边界的物理含义。
-
-全芯片场景还多一层工程矛盾。把曲线离散得更细，检查更接近几何真值，数据和运行时间随之增加。直接在 Bézier 上做 native check，能减少 PWL 转换误差，但 boolean、offset、distance 和 violation marker 都要有稳定的曲线算法，已有的 Manhattan 几何内核不能原封不动搬过来。
-
-这类问题已经形成独立的论文序列。2020 年的工作系统讨论了 curvilinear mask shapes 的 MRC，2023 年的 JMM 论文则把 cubic Bézier 的控制点移动、规则约束和 OPC 流程放在一起处理。Curvilinear mask handling in OPC flow
-
-## 数据格式成了精度问题
-
-很多软件团队把格式看成 I/O 问题。对曲线 mask 来说，格式会改变结果。
-
-SEMI P39 OASIS 用 piecewise-linear polygon 保存曲线。轮廓公差越紧，vertex 越多，OPC、MRC、MDP 和 writer 之间每过一次接口，都可能重新采样一次。重复的拟合与反拟合会改变局部曲率，也会让两个工具对同一处 violation 得出不同结论。
-
-SEMI P49-0823 为 P39 定义了实验性的 curvilinear multigon 扩展，允许用 spline control point 传递曲线。SEMI Standards Store 的 P49 条目写得很清楚。它希望减少 ILT 文件尺寸，并让工具间传递 spline figure 时不再插值或丢失信息。它也明确说明，P49 文件与现有 P39 reader 不兼容。SEMI Standards Store 的 P49 条目
-
-截至本文写作时，SEMI Standards Store 仍把 P49-0823 标为 Preliminary 和 Current，条目里却保留了原定 2025 年撤下的通知。这个细节比一句“已经有标准”更接近实际状态。原生曲线格式已经进入行业协作，标准化和互操作仍在过渡。
-
-这也解释了为什么一些 EDA 厂商开始强调 integrated pipeline 或 direct writer handoff。OPC、MRC、MPC 和 fracture 若能在同一进程内共享曲线对象，便可少写几次巨型中间文件，也少做几次几何离散。Synopsys 当前的 Proteus 页面已经公开列出 native curvilinear、full-chip ILT、LRC，以及把 fracture 并入 mask synthesis 的 DMW 流程。Synopsys Proteus 产品页
-
-## MPC 面对的是第二个逆问题
-
-MPC 的英文全称是 Mask Process Correction，通常译作掩模工艺校正。OPC 补偿的是掩模图形经过光刻后在晶圆上的成像误差。MPC 补偿的是电子束写入、resist、显影和刻蚀给物理掩模带来的误差。
-
-OPC 工程师关心 mask 怎样在 wafer 上成像。mask shop 还要解决另一个方向相似、对象不同的逆问题。
-
-> wafer target → OPC 或 ILT → ideal mask target
-> 
-> ideal mask target → MPC 与 writer correction → physical mask contour
-> 
-> physical mask contour → scanner → wafer contour
-
-电子束邻近效应、resist、显影和刻蚀会让 mask target 发生局部 bias 和圆化。传统 MPC 常沿 Manhattan edge 做位移。曲线轮廓需要按曲率自适应 fragmentation，或者直接移动 Bézier 控制点。高曲率区需要更密的约束，低曲率长边又不值得浪费同样数量的采样点。
-
-多束 writer 还提供了另一个自由度。它可以在像素域调 dose，用剂量而非大幅改形来移动物理边界。PLDC 把这一步放进 writer rasterization data path，省掉离线 MPC 文件往返。2025 年的 Micron 联合材料显示，这条路线已经开始 production qualification，同时也显示 dark pillar 仍可能更适合某种离线方案。
-
-这对 OPC 软件提出了一个很实际的新课题。OPC 交付的理想 mask target、MPC 使用的模型和 writer 能执行的 dose map，最好共享同一套误差预算。若 OPC 只优化理想几何，MPC 只追逐 mask SEM contour，双方在不同表示和不同公差上各自收敛，最后的 wafer EPE 仍可能失控。writer-aware OPC、mask-wafer co-optimization 和 design-mask-wafer co-optimization 都是在收紧这处接口。
-
-## EUV 把曲线重新变成三维问题
-
-DUV OPC 常能在较薄的 mask 近似下工作。EUV mask 是反射式多层膜结构，光以斜角入射，absorber 高度相对波长不可忽略。mask near field 会随 feature orientation、偏振和 source point 改变。
-
-曲线把一条边上的方向从几个离散角度扩展成连续分布。到了 High-NA EUV，anamorphic imaging 又让两个方向的缩小倍率不同。一个只在二维轮廓上表现良好的 mask，放进严格三维模型后可能出现 shadowing、best-focus shift 和方向相关的 CD 误差。
-
-GPU 平台会继续压低成本。NVIDIA 当前的 cuLitho 页面把 curvilinear OPC 和 High-NA EUV 列为目标场景，并给出 ILT 最高 40 倍的供应商 benchmark。页面也引用 TSMC 对 production deployment 的表述。NVIDIA cuLitho 页面 这类倍数应放回测试边界里理解。一个 imaging kernel 或 ILT 主循环的加速，不会自动消除 MRC、MPC、fracture、verification、模型校准和 I/O 的时间。
-
-## CD 不再是一个足够的数
-
-矩形线条可以用一两个 CD gauge 描述。自由曲线的误差分布在整条轮廓上。同样的平均 CD，可能对应完全不同的局部凹陷、凸起和高曲率偏差。
-
-曲线 metrology 因此转向 contour-based measurement。系统从 SEM 图像提取物理轮廓，再沿目标边界布置密集法向 gauge，统计每一点的 EPE。近年的论文开始讨论 sEPE、等效 CD、等效 LER 和等效 CDU，也有人只在高曲率区域使用完整二维轮廓，在简单区域保留传统一维 CD，以控制 HVM 吞吐量。
-
-检查也遇到类似问题。复杂 SRAF 上的一点边缘波动，可能是设计本来就允许的曲线，也可能是会打印的 defect。die-to-database inspection 必须知道目标曲线的几何公差、物理 mask 模型和 wafer printability。Samsung 在 2024 年专门发表了 curvilinear mask deep check 论文，已经说明预先发现这类缺陷正在成为独立的软件任务。论文记录
-
-OPC model calibration 也要随之改变。训练集若仍由水平线、垂直线和少量 corner gauge 主导，模型会在连续方向、高曲率和二维邻域上外推。curve-aware calibration 需要覆盖局部半径、切向角、邻域密度、writer signature 和 contour extraction uncertainty。signoff 比主求解器更保守，因为更大的解空间也意味着更多模型外区域。
-
-## 近期更现实的落地方式
-
-公开材料显示，近期更可能扩大的是几条有边界的路线。整张版图无差别自由曲线还缺少公开证据。
-
-一类是图形选择。接触孔、via、line end、二维拐角和复杂 SRAF 通常比规则的一维 line-space 获益更明显。将曲线优化集中在 lithography-sensitive 的二维区域，可以把计算和数据预算花在收益最大的地方。
-
-一类是混合求解。重复 memory array 或 critical clip 用 ILT，外围和规则图形保留 conventional OPC，再处理两种解之间的 blend。曲线 OPC 也可以只优化 main feature，SRAF 由快速 ILT 或模型预测生成。
-
-一类是 writer 分流。先进 EUV mask 更适合 MBMW 的像素化写入，既有 193i 流程仍可能使用 VSB，再通过 overlapping shot 和 mask-wafer co-optimization 把写入时间控制在可接受范围。
-
-还有一类发生在软件架构里。工具内部尽量保留原生曲线，中间步骤用共享内存和 pipeline 传递对象，必要时才离散成 writer 或 legacy interface 能接受的格式。减少一次文件落盘，有时也等于减少一次几何误差。
-
-## 接下来要看的指标
-
-判断一项曲线 mask 发布是否接近生产，可以盯住几件具体的事。
-
-- 
-- 报告的是单个 clip、`1 mm²` 晶圆面积、full chip，还是 full reticle
-- 
-- runtime 只含 ILT 主循环，还是含 MRC、MPC、fracture、verification 和 I/O
-- 
-- mask 数据是 PWL、native Bézier、B-spline，还是 writer pixel dose
-- 
-- 结果来自 simulation、写后 mask SEM、AIMS、wafer exposure，还是产品层 qualification
-- 
-- MRC 在优化前、优化中还是输出后执行，cleanup 后有没有重新做 wafer signoff
-- 
-- 性能数字是否给出硬件、模型精度、process corner ���误差阈值
--
-
-曲线掩模已经有可用的写入设备、商业 EDA 支持、晶圆厂联合验证和逐渐成形的计量方法。短板也很清楚。原生格式仍在过渡，严格 Mask3D 计算很重，二维 contour 的检查和计量吞吐量不足，不同图形的 MPC 最优解也没有统一。
-
-它带给 OPC 的最大变化，最终落在一个朴素要求上。软件交出的对象已经变成一条连续轮廓，它需要在优化、交换、制造和签核之间保持同一份物理含义。
-
-这条轮廓每少经历一次无谓的离散，少丢掉一份曲率信息，少消耗一点 EPE 预算，曲线 mask 就向量产走近一步。
-
-## 主要资料
-
-- 
-- Saleh 与 Sayegh 1981 年论文
-- 
-- Pang 2021 年 ILT 三十年综述
-- 
-- 2023 年 curvilinear mask handling in OPC flow
-- 
-- 2025 年 TAAL curvilinear OPC
-- 
-- 2026 年动态控制点 curvilinear OPC
-- 
-- IMS 2012 年多束写入 POC 论文
-- 
-- IMS 多束掩模写入产品页
-- 
-- NuFlare 电子束掩模写入产品页
-- 
-- Micron 2022 年 DUV 与 EUV 曲线掩模材料
-- 
-- Micron 2025 年全版图在线 MPC 材料
-- 
-- SEMI Standards Store 的 P49 条目
-- 
-- Synopsys Proteus 产品页
-- 
-- NVIDIA cuLitho 产品页
-- 
-- 2026 年曲线掩模技术综述
--
-
-*文中厂商性能数字和产品能力均按其公开材料限定使用。行业材料仅作事实引用，转载原图前仍应向权利人确认授权。*
+1. Linyong Pang, et al. “Breakthrough curvilinear ILT enabled by multi-beam mask writing.” *Journal of Micro/Nanopatterning, Materials, and Metrology*, 20(4):041405, 2021. [DOI:10.1117/1.JMM.20.4.041405](https://doi.org/10.1117/1.JMM.20.4.041405)，[作者机构全文](https://design2silicon.com/wp-content/uploads/2021/11/JM3-21046SS_online.pdf)。
+2. Yung-Yu Chen, Kai-Hsiang Chang, Wen-Li Cheng, Yu-Po Tang. “Curvilinear mask handling in OPC flow.” *Journal of Micro/Nanopatterning, Materials, and Metrology*, 23(1):011203，2023 年在线发表 / 2024 年卷期。[DOI:10.1117/1.JMM.23.1.011203](https://doi.org/10.1117/1.JMM.23.1.011203)，[作者论文目录](https://yyc.solvcon.net/en/latest/writings.html)。
+3. IMS Nanofabrication. “Our products.” [官方产品文档](https://www.ims.co.at/en/products/)。束阵列架构与写入模式为厂商说明，不能替代独立良率验证。
+4. Ryan Pearman, et al. “Adopting curvilinear shapes for production ILT: challenges and opportunities.” *Proceedings of SPIE*, 11148:111480T, 2019. [作者机构全文](https://design2silicon.com/wp-content/uploads/2020/08/111480T-2019.pdf)。
+5. Alfred K. Wong, Richard A. Ferguson, Scott M. Mansfield. “The mask error factor in optical lithography.” *IEEE Transactions on Semiconductor Manufacturing*, 13(2):235–242, 2000. [DOI:10.1109/66.843639](https://doi.org/10.1109/66.843639)，[IBM 原始摘要](https://research.ibm.com/publications/the-mask-error-factor-in-optical-lithography)。
+6. SEMI. *SEMI P49-0823 (Preliminary): Specification for Experimental Curvilinear Multigon Extension to SEMI P39*, 2023. [标准目录与摘要](https://store-us.semi.org/products/p04900-semi-p49-specification-for-experimental-curvilinear-multigon-extension-to-semi-p39)，[SEMI 发布说明](https://www.semi.org/en/standards-watch-2023-jun/new-preliminary-standard-for-curvilinear-approved)。本文只据公开摘要说明，未把付费全文未读取条款写成结论。
+7. Jan Pomplun, Sven Burger, Frank Schmidt, et al. “Rigorous FEM-Simulation of EUV-Masks: Influence of Shape and Material Parameters.” *Proceedings of SPIE*, 6349:63493D, 2006. [DOI:10.1117/12.686828](https://doi.org/10.1117/12.686828)，[作者预印本](https://arxiv.org/abs/physics/0610236)。
+8. Shaopeng Guo, Haofeng Chen, Chunxiao Mu, et al. “Mask3D-compatible full-vectorial Hopkins imaging for lithographic modeling.” *Optica*, 2025. [DOI:10.1364/OPTICA.565511](https://doi.org/10.1364/OPTICA.565511)。
+9. Siemens. “Rapid full-chip curvilinear OPC for advanced logic and memory.” Technical paper, 2021. [官方文档入口](https://resources.sw.siemens.com/en-GB/technical-paper-rapid-full-chip-curvilinear-opc-for-advanced-logic-and-memory/)。
+10. Aki Fujimura, Yohan Choi, Abhishek Shendre. “Curvilinear masks overview: manufacturable mask shapes are more reliably manufacturable.” *Journal of Micro/Nanopatterning, Materials, and Metrology*, 23(4):041502, 2024. [DOI:10.1117/1.JMM.23.4.041502](https://doi.org/10.1117/1.JMM.23.4.041502)。作为商业作者对领域的综述，其优势论断应放回具体实验范围。
+11. LithoGuy. “Optical proximity correction.” Wikimedia Commons, 2010. [文件、作者与公有领域声明](https://commons.wikimedia.org/wiki/File:Optical_proximity_correction.png)。

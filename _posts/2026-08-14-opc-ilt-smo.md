@@ -2,149 +2,217 @@
 layout: post
 read_time: true
 show_date: true
-title: "OPC、ILT、SMO，到底分别在优化什么"
+title: "OPC、ILT、SMO：优化变量、模型、约束与交付物"
 date: 2026-08-14 00:29:50 +0800
 tags: [光刻, OPC, ILT, SMO]
 author: 端点星日志
-description: "OPC 定义掩模修正任务，ILT 扩大掩模的反演搜索空间，SMO 再把照明加入变量。到了 curvilinear mask、AI 求解和 High-NA EUV 时代，真正可靠的分界仍是变量、约束与交付物。"
+description: "用统一的光刻正向模型区分 OPC、ILT 和 SMO，深入比较边缘与场表示、联合优化、鲁棒指标、制造约束及最终签核。"
 source_url: "https://mp.weixin.qq.com/s/GjLR8b9IgiOAFF2APP8-Fg"
 toc: true
+last_modified_at: 2026-10-25
+mathjax: true
 ---
 
-把 OPC、ILT 和 SMO 放在一行，人们很容易先问谁比谁先进，再把三者排成一条升级路线。公开论文和生产流程都撑不起这种排法。
+*2026-10-25 修订 · [计算光刻阅读路线](/lithography/)*
 
-如果只看研究概念进入公开文献的时间，今天被综述纳入 ILT 脉络的 inverse mask design 的确出现得更早。Liu 和 Zakhor 在 1992 年已经用 Hopkins model、branch-and-bound 与 simulated annealing 系统设计 pre-distorted mask。[3][13] Rosenbluth 等人联合优化 mask 与 source 的会议论文发表于 2001 年，相关期刊论文发表于 2002 年。[5]
+OPC、ILT 和 SMO 经常被画成一条升级路线：先修边缘，再用像素，最后连光源一起优化。这个说法方便记忆，却会在真正读论文或比较工具时失效。曲线掩模可以由 OPC 生成，ILT 可以在固定光源下工作，SMO 也常以固定光源后的全芯片 OPC/ILT 作为交付环节。
 
-这两个年份只能说明相关问题进入公开文献的时间不同。它们推不出工程采用顺序，也推不出“做完 ILT 才能进入 SMO”。2001 年的论文同时讨论了 fixed-source mask optimization、fixed-mask source optimization 和 mask-source joint optimization。[5] 今天的流程也常在 SMO 确定 source 以后，再用 full-chip OPC 或 ILT 完成掩模修正。[11]
+更可靠的区分是：**OPC 强调掩模修正任务；ILT 强调把掩模综合作为逆问题求解，并通常使用更自由的表示；SMO 明确把照明分布也加入设计变量。** 三者共享大量物理模型、损失函数和计算技术，它们的边界应从变量、约束和交付物理解，而不能只看缩写或输出图形是否圆滑。
 
-model-based OPC 可以生成 curvilinear mask，ILT 也能输出 Manhattan mask。AI 又让 edge-based、pixel-based 和 field-based solver 互相借用技术。把 1990 年代以来的论文、Erdmann 和 Mack 的经典教材、2025 年的 AI-ILT 综述，以及 ASML、Synopsys 当前的技术资料放在一起看，一条更稳定的主线会浮出来。
+## 一、先建立一张共同的变量表
 
-OPC 说的是掩模修正任务。ILT 说的是怎样把掩模当成逆问题来求。SMO 增加了照明光源这组变量。三者可能使用相近的成像模型，也可能盯着同一组 EPE、CD 和 process window 指标，真正不同的是优化器手里有哪些自由度。
+设目标晶圆图形为 \(T\)，掩模为 \(M\)，照明光源为 \(S\)，焦点、剂量、像差、材料与工艺条件统称 \(\theta\)。前向模型是
 
-## 先把目标、变量和约束拆开
+$$
+W=F(M,S;\theta).
+$$
 
-设晶圆上希望得到的图形为 T，掩模为 M，照明光源为 S，焦点、剂量、像差、胶和刻蚀条件合在 θ 里。前向光刻模型可以简写成
+\(W\) 可能是空中像、显影后轮廓或刻蚀后轮廓。最后一种更接近电路要求，但模型与校准成本也更高。教材的核心提醒是：光学成像只是图形转移链中的一部分，不能把“空中像像素误差小”直接解释为“最后电路合格”。[[1]](https://doi.org/10.1002/9780470723876)
 
-W=F(M,S;θ)
+一个统一的鲁棒优化形式可以写成
 
-W 是模型预测的晶圆图形。优化器让它接近目标，同时照顾工艺波动和制造限制。一个常见的抽象形式是
+$$
+\min_{M\in\mathcal M,S\in\mathcal S}
+\sum_{c=1}^{C}\alpha_c
+\sum_{p\in\mathcal P}w_p
+L\!\left(F(M_c,S;\theta_p),T_c\right)
++\lambda R_M(M)+\mu R_S(S).
+$$
 
-J=∑p∈PwpL(Wp,T)+RM(M)+RS(S)
+\(c\) 标记代表图形或局部区域，\(p\) 标记工艺角。\(R_M\) 控制掩模复杂度，\(R_S\) 控制光源形状、能量和硬件可实现性。固定 \(S=S_0\)，就得到掩模优化；允许 \(S\) 也变化，才是源—掩模协同设计。
 
-L 可以衡量 EPE、CD、轮廓差异或 PV Band。RM 约束掩模的最小线宽、间距、曲率和复杂度。RS 约束光源能量、平滑度、对称性和照明硬件能力。
+| 维度 | 常规模型 OPC | 常见 ILT | SMO |
+| --- | --- | --- | --- |
+| 主要变量 | 边缘偏移、bias、角部与 SRAF 参数 | 掩模场、隐式边界、曲线或拓扑变量 | 光源参数，以及一种掩模表示 |
+| 光源 | 通常固定 | 通常固定，也可嵌入联合流程 | 明确参与优化 |
+| 初始几何依赖 | 常围绕原边缘修正 | 通常允许更大形状变化 | 取决于掩模求解器 |
+| 主要工程交付物 | 修正后的掩模版图 | 可制造的反演掩模 | 可实现的全局光源及配套修正流程 |
+| 共同验收 | 晶圆误差、工艺窗口、规则、制造与验证 | 同左 | 同左，并增加光源硬件检查 |
 
-经典教材反复提醒，nominal focus 和 nominal dose 下的一张漂亮轮廓远远不够。真正有用的解，需要在 common process window 里照顾一组图形。[1][2] 所以，OPC、ILT 和 SMO 的优化目标可以高度相似。更值得追问的是优化变量、搜索空间和约束在哪里生效。
+表中的“常见”很重要：这些是典型工程形态，不是对每篇论文的强制命名。要精确判断一种方法，仍需打开算法，确认哪些参数真的被更新。
 
-| 名称 | 主要优化变量 | 常见工程交付物 |
-| --- | --- | --- |
-| OPC | 掩模边缘、bias、角部与辅助图形 | 已选光源下的 full-chip 修正掩模 |
-| ILT | 掩模函数、边界或拓扑 | 更大搜索空间里求得的掩模解 |
-| SMO | 光源分布与掩模 | 可实现的全局光源及配套掩模方案 |
+## 二、OPC：从局部经验到模型驱动的掩模修正
 
-ASML 现在用更宽的“计算光刻”来概括扫描机、掩模与工艺的共同优化。[12] OPC、ILT 和 SMO 可以理解成这套大系统中的三个常用工作层级。名称会随论文和产品变化，变量、约束与最终交付物更经得起追问。
+规则式 OPC 根据线宽、间距和邻近环境施加 bias、hammerhead、serif 等几何修正。模型式 OPC 则把正向仿真放进迭代：在评估点比较晶圆轮廓与目标，更新掩模边缘，再次仿真。
 
-## OPC 沿着掩模做修正
+假设边缘控制变量为 \(\mathbf u\)，EPE 向量为 \(\mathbf e(\mathbf u)\)。小幅更新时，可近似为
 
-OPC 的全名是 Optical Proximity Correction。早期 rule-based OPC 很直观。线端容易缩短，就给线端增加 bias 或 hammerhead。角部容易圆化，就加入 serif。dense pattern 与 isolated pattern 成像不同，就按局部环境使用不同规则。
+$$
+\mathbf e(\mathbf u+\Delta\mathbf u)
+\approx\mathbf e(\mathbf u)+J\Delta\mathbf u.
+$$
 
-进入 model-based OPC 以后，forward simulation 成为循环的一部分。版图边缘被切成许多片段，模型计算 wafer contour，求解器根据 EPE、CD 或其他误差移动边缘，再次仿真。SRAF 也可���加入流程，用来改变衍射谱和 process window。
+灵敏度矩阵 \(J\) 反映边缘之间的耦合。一个片段向外移动，不只影响与它正对的那一点，还可能改变旁边的线端与角部。因此，OPC 并非每条边各自修到零误差那么简单。
 
-这里容易留下一个过时印象，仿佛 OPC 永远只会推拉直线边缘。2025 年的 ILT 综述把 model-based OPC 继续分为 edge-based 和 pixel-based 路线，并回顾了 pixel-based 方法如何逐步走向 ILT。[8] Synopsys 当前的 Proteus 资料也明确写到，生产 OPC 同时支持 Manhattan 和 curvilinear 版图。[11]
+![未经校正与经过 OPC 的图形对照](/assets/images/references/optical-proximity-correction.png)
+*图 1：通过改变输入掩模补偿输出图形，是 OPC 的基本任务；图示本身不区分边缘法与 ILT 求解器。来源：[Wikimedia Commons，Optical proximity correction.png](https://commons.wikimedia.org/wiki/File:Optical_proximity_correction.png)，LithoGuy，2010，公共领域（Public domain），未修改。*
 
-因此，OPC 直接优化的是掩模修正（mask correction），评判结果却落在 wafer 上。掩模与 design target 长得更像，不会自动获得更高分。只要通过 lithography model 以后 wafer contour 更接近目标，并且在工艺波动下保持稳定，serif、hammerhead、SRAF 和 curvilinear edge 都有工程价值。
+OPC 的一个工程优势是，变量可以集中在当前误差附近，保留版图结构与层级，也便于控制修正幅度。对于大部分已经能打印的图形，这种表示可能比给整个区域分配像素变量更经济。局限在于，如果只移动既有边界，就很难主动改变拓扑或远处的辅助图形布局；系统往往再配合 SRAF 插入、重新分段或局部更自由的求解。
 
-现代 OPC 模型还可能包含 resist、etch 和 mask 3D effect。“Optical”保留了技术沿革，今天的交付物仍是一张经过计算修正、能够进入制造流程的掩模版图。
+不要把 OPC 与 Manhattan 形状绑定。当前官方文档明确列出支持 Manhattan 与 curvilinear 的模型 OPC，也列出 field-based ILT。[[2]](https://www.synopsys.com/content/dam/synopsys/silicon/datasheets/proteus-ds.pdf) 这类资料能证明工具支持某种能力，不能独自证明客户每一层都采用它，更不能用于不同产品之间的性能排名。
 
-## ILT 把掩模写成逆问题
+## 三、ILT：扩大掩模搜索，而不是跳过正向仿真
 
-ILT 的全名是 Inverse Lithography Technology。Pang 在 2021 年的综述里，把它概括为已知掩模到晶圆的前向变换（mask-to-wafer forward transform）以后，反求一张具有 pattern fidelity 或 process window 优势的掩模。[3]
+ILT 从目标出发，寻找使前向成像接近目标的掩模：
 
-在常见设定中，光源已经固定，ILT 求的是 M。
+$$
+M^*=\arg\min_{M\in\mathcal M}
+J(M\mid S_0,\theta).
+$$
 
-JILT=J(M∣S,θ)
+这个问题与模型 OPC 的任务有重合，区别通常在搜索空间与求解方式。全场像素允许更多区域参与变化，水平集允许边界合并、分裂，曲线参数化则能在较少变量下表达平滑边缘。主特征与 SRAF 可以在同一目标中竞争光学资源，而不必完全依赖预设辅助图形模板。
 
-Poonawala 和 Milanfar 把 mask design 写成 inverse imaging problem，后续工作又发展出 pixel-based、continuous function、level-set、frequency-domain 和 field-based 等多种表示。[1][4] 主图形、角部与辅助图形可以在同一 cost function 里演化，搜索也有机会离初始版图更远。
+像素化逆掩模设计在 1992 年 Liu 与 Zakhor 的二值/相移掩模论文中已有系统讨论；2007 年 Poonawala 与 Milanfar 又以逆成像、连续松弛与正则化组织了这一问题。[[3]](https://doi.org/10.1109/66.136275) [[4]](https://doi.org/10.1109/TIP.2006.891332) 这条研究史不支持“ILT 到 2020 年才首次引入反向设计”的说法。
 
-这几句话里有三个限定很重要。
+### 变量更多，为什么不保证全局最优
 
-ILT 不等于 pixel-based method。level-set 优化的是 implicit boundary，field-based solver 和 parameterized method 也能完成反演。ILT 不等于 curvilinear mask。制造规则要求 Manhattan 化时，它可以输出直角图形。ILT 也不保证 global optimum。这个 inverse problem 多解且 non-convex，mask rule、计算预算与初值共同限定了最后能找到的解。[1][3]
+掩模振幅经过光学传递后取模平方，再经过胶的非线性响应；二值性和制造规则还带来离散约束。目标通常非凸，不同初值可能收敛到不同结果。增加变量，理论上扩大了可选集合，却也增加了局部极值、病态方向和模型过拟合的机会。
 
-OPC 与 ILT 的边界也没有一条行业统一的细线。站在任务层面，两者都在做 mask correction。站在 solver 层面，ILT 通常给掩模更连续、更高维或更少受初始边界限制的 search space。当前商业工具甚至同时提供 curvilinear OPC、Manhattan ILT 和 curvilinear ILT。[11]
+实际连续求解常把 \(m_i\in\{0,1\}\) 暂时放宽到 \([0,1]\)，再加二值化和复杂度惩罚。最终必须回到可制造的几何，并在该几何上重新计算。灰度最优目标值低，不代表硬阈值后二值掩模同样好；最后这一步不应藏在“后处理”三个字里。
 
-所以，看到一个复杂 curvilinear shape 不能立刻断言它来自 ILT，看到 Manhattan output 也不能排除 ILT。更可靠的问题是掩模怎样表示，哪些自由度被联合求解，制造约束何时进入迭代。
+因此，ILT 的准确表述是“搜索更自由的掩模解”，而不是“直接得到唯一最优光罩”。它也不是曲线形状的同义词。若约束要求 Manhattan 化，反演流程可以输出直角几何；若使用曲线边缘的模型 OPC，同样能得到弯曲输出。
 
-## SMO 再把照明放进变量表
+## 四、SMO：增加的是照明角谱，而不只是亮度
 
-SMO 的全名是 Source Mask Optimization。它的基本形式变成
+SMO 求解
 
-JSMO=J(S,M∣θ)
+$$
+(M^*,S^*)=\arg\min_{M\in\mathcal M,S\in\mathcal S}
+J(M,S).
+$$
 
-这里的光源不是简单的曝光亮度。S 描述照明光瞳里的角度分布，决定哪些入射波矢参与成像。掩模决定衍射谱，投影物镜收集其中一部分。光源变化以后，同一张掩模的衍射级次会以另一种方式进入物镜。掩模变化以后，原来合适的光源也可能失去优势。
+这里 \(S\) 描述照明光瞳中的角度与能量分布。曝光剂量是总量，源分布决定来自哪些方向的光参与成像；二者不能混为一个变量。
 
-Rosenbluth 等人在 2001 年的会议论文中公开联合寻找 mask 与 source，2002 年又以期刊论文形式发表相关工作。[5] 后续 pixel-based SMO 把两者写入同一套优化框架，并加入拓扑与制造约束。[6]
+在薄掩模、部分相干成像近似下，可以写成离散源点求和：
 
-SMO 有一个天然的不对称。光源通常服务整层版图或一组曝光任务，是数量较少的全局自由度。掩模修正随位置变化，是数量巨大的局部自由度。给一类困难图形单独求出的漂亮光源，可能会损害其他方向、节距和二维图形。
+$$
+I(\mathbf r)=\sum_j s_j
+\left|\mathcal F^{-1}
+\left\{P(\mathbf f+\mathbf q_j)\widehat M(\mathbf f)\right\}\right|^2,
+\quad s_j\ge0.
+$$
 
-实际流程常从 representative pattern 或 hotspot 开始，联合探索 source 与 mask，再把 source 收敛到 scanner 能够实现的形状。光源冻结以后，full-chip mask 仍交给 OPC 或 ILT。公开的 full-chip SMO 工作和当前生产工具都采用了这类分层思路。[7][11]
+不同源点互不相干，所以按强度相加；同一个源点激发的衍射级次仍会相干干涉。掩模决定频谱 \(\widehat M\)，光源位置 \(\mathbf q_j\) 改变物镜对频谱的采样。一个变量改变以后，另一个变量原来的最佳选择就可能不再合适。
 
-High-NA EUV 又让这项工作多了几层现实约束。2024 年 imec 的一项 0.55 NA 研究，在同一个 test cell 里比较 dark-field、bright-field、不同 absorber、带或不带 SRAF 等组合，同时纳入 4×/8× anamorphic magnification、mask writing rule、resist blur 和 process window。[10]
+Rosenbluth 等人在 2001 年会议、2002 年期刊扩展工作中联合研究光源与掩模。原论文的小场周期图形条件需要保留，不能将其改善比例推广到任意版图。[[5]](https://doi.org/10.1117/1.1448500) Ma 与 Arce 2009 年的工作则给出了像素化同时优化与约束处理的代表性框架。[[6]](https://doi.org/10.1364/OE.17.005783)
 
-严格按缩写，SMO 的变量仍是 source 和 mask。到了 High-NA 研究中，source、pattern tone、absorber、SRAF、mask 3D effect 和 resist model 往往要放在同一轮方案比较里。今天谈 SMO，已经很难只看一张 freeform source 图。
+### 光源全局，掩模局部：为什么必须做共同权衡
 
-## AI 改了求解方式，没有增加第四类变量
+同一曝光任务通常共享光源，局部掩模却能各自修改。一种有利于水平密集线的源，可能损害垂直线、孤立线或二维线端。优化目标必须覆盖代表图形集合，而非给每个图形分别寻找一套无法同时使用的专属光源。
 
-近几年又出现 GAN-OPC、神经网络 ILT、可微光刻和 DiffOPC 等名字。它们确实改变了计算成本与搜索方式，也容易制造一个新误会，仿佛 AI 成了 OPC、ILT、SMO 之后的第四级。
+这会产生一种常见的工程流程：先用有限的关键图形联合探索源与掩模，把理想源收敛为扫描机可实现的分布；再冻结光源，用高容量 OPC 或 ILT 修正全芯片。最终全芯片阶段不再移动光源，并不否定前面的 SMO，它只是将全局决策与大量局部修正分层处理。公开 full-chip SMO 工作正是围绕这种规模与覆盖问题展开。[[7]](https://doi.org/10.1117/12.881633)
 
-2025 年的 AI-ILT 综述梳理了机器学习在 initial mask generation、SRAF insertion、surrogate lithography model、gradient estimation 和 end-to-end prediction 中的用法。[8] 2024 年提出的 DiffOPC 则把 edge-based OPC 写进 differentiable framework，让传统 edge control point 也能利用 automatic differentiation。[9]
+### 联合不等于每一步同时更新
 
-这些方法改变的是模型、solver 和 initialization。最终被移动的自由度仍然可以是 mask，也可以是 source 与 mask。AI 输出还要接受物理模型、mask rule、process corner 和 full-chip verification。它让旧路线互相渗透，变量表却没有凭空多出一栏。
+SMO 可以交替 SO（源优化）与 MO（掩模优化），也可以同时计算两个变量的梯度，或把一个变量的近似最优响应嵌入另一个变量的优化。名称里的 joint、simultaneous 或 co-optimization，不能代替对更新顺序的检查。
 
-这个视角也解释了当前文献里的命名差异。同一种神经网络，若只预测局部 edge displacement，通常会被写进 OPC flow。若输出高自由度 mask field，作者更可能称它为 ILT。若连 source distribution 也参加训练或优化，问题才进入 SMO 的范围。
+固定掩模时，空中像对非相干源点权重是线性的；但胶阈值、工艺窗口和硬件约束会使源优化目标更复杂。固定光源时，掩模问题仍然非凸。将两个子问题交替求解，一般不会自动获得全局最优，也可能出现一个子问题的改善损害另一个方向的情形。
 
-## 同一条线端，三种方法怎样动手
+## 五、三者为何都不能只看平均 EPE
 
-拿一个容易发生 line-end shortening 的线端作示意，区别会清楚很多。
+EPE 衡量晶圆边缘相对目标边缘的位置差。不同论文对采样点、符号、允许限和失败计数的定义可能不同，不能只看一个平均数。一个线端回缩很严重，但长直边采样点很多，平均值仍可能很好看。
 
-OPC 会根据当前晶圆轮廓移动线端附近的边缘控制点，必要时加入 hammerhead 或 SRAF。光源已经选定，主要使用掩模上的局部自由度。
+CD 衡量线宽或孔尺寸，EPE 则更直接反映边缘位置；两者也不互相替代。两条边一起平移时，CD 可以不变，而定位已经错了。反过来，中心位置正确，线宽仍可能超差。
 
-ILT 仍使用这套 source，却把更完整的局部 mask 送入 cost function。line end、corner 和 assist feature 可以一起演化，最后可能得到 curvilinear shape，也可能得到满足 Manhattan rule 的复杂形状。它扩大的是 mask solution 的 search space。
+NILS 是边缘处的归一化图像对数斜率：
 
-SMO 会把这个线端与其他方向、节距和二维图形放在同一组样本里。优化器既能改掩模，也能改变照明角谱。它需要找到整层图形能够共享的光源，无法给每个线端配一套专属照明。
+$$
+\mathrm{NILS}=CD\left|\frac{\partial\ln I}{\partial x}\right|.
+$$
 
-三条路径最后都可能用 EPE、CD、NILS、PV Band 和 MEEF 评价结果。指标并没有替它们划出边界，变量与自由度才有这个作用。
+在简单阈值模型中，斜率更陡通常意味着剂量扰动造成的边缘移动更小。然而 NILS 是局部成像代理，不能单独证明 EUV 缺孔、桥连和刻蚀后缺陷都降低。每一个代理指标，都应与真实失效模式建立联系。
 
-## 看到新名词时，先问五个问题
+MEEF 衡量掩模误差在晶圆上的放大。若掩模缩小倍率为 \(R\)，可写成
 
-先看 solver 动了什么，只有 mask，还是 source 与 mask 一起变化。再看 mask 怎样表示，edge segment、pixel、continuous field、level-set 和 curve control point，会带来不同的 search space。
+$$
+\mathrm{MEEF}=\frac{\Delta CD_{\mathrm{wafer}}}
+{\Delta CD_{\mathrm{mask}}/R}.
+$$
 
-接着看 forward model 算到 aerial image、resist contour 还是 post-etch contour，cost function 覆盖哪些 process corner，制造约束又怎样进入流程。约束在迭代中生效、在输出后清理，或者只能依赖 mask writer capability，结果会有明显差别。nominal condition 下的漂亮轮廓，也代替不了 common process window。
+该定义要求尺寸和方向一致；各向异性成像时还要分别说明方向倍率。PV Band 则观察多工艺角轮廓的变化包络，它的宽度/面积定义与采样集合需要明确，不能把不同论文的数值直接横比。
 
-这五个问题答完，很多等号会自然消失。OPC 不再等于 rule-based correction，ILT 不再等于 curvilinear mask，SMO 也不再等于一张 freeform source 图。到了 AI 与 High-NA EUV 时代，缩写仍有用，变量、约束与交付物更接近工程真相。
+这些指标回答的是不同问题：印得准吗，对剂量稳吗，对掩模误差稳吗，在不同工艺条件下漂多少？OPC、ILT、SMO 都可能优化其中若干项，指标并不负责划分它们的身份。
 
-## 参考文献与延伸阅读
+## 六、用一个线端例子把差别落到操作上
 
-[1] Andreas Erdmann, *Optical and EUV Lithography, A Modeling Perspective*, SPIE Press, 2021. 图书页面
+设某金属线端在标称条件下回缩，同时在离焦时与邻线出现桥连风险。首先保持模型和光源一致，比较三种求解范围。
 
-[2] Chris A. Mack, *Fundamental Principles of Optical Lithography, The Science of Microfabrication*, Wiley, 2007. 图书页面
+**OPC 路线**可以移动线端与邻近边缘，加入 hammerhead 或 SRAF，再以 EPE、CD 和规则检查筛选更新。如果已有表示能够容纳有效修正，采用更多变量未必有显著收益。
 
-[3] L. Pang, “Inverse lithography technology, 30 years from concept to practical, full-chip reality,” *Journal of Micro/Nanopatterning, Materials, and Metrology* 20(3), 030901, 2021. 论文页面
+**ILT 路线**允许更完整的局部场参与优化。线端与辅助形状可以联合演化，出现远离原始边界的新岛、窄颈或曲线。它可能找到边缘小步修正难以到达的解，也可能生成需要清理的不可制造结构。公平比较必须在最终制造几何上重新仿真。
 
-[4] A. Poonawala and P. Milanfar, “Mask design for optical microlithography, an inverse imaging problem,” *IEEE Transactions on Image Processing* 16(3), 774-788, 2007.
+**SMO 路线**进一步改变照明，但应把这个线端和其他节距、方向、二维图形放在同一集合里。对线端最有利的光源，不一定是整层最好的。若只有这个 clip 进入目标，得到的是局部探索结果，还不是可直接部署的全局光源。
 
-[5] A. E. Rosenbluth et al., “Optimum mask and source patterns to print a given shape,” *Proceedings of SPIE* 4346, 486-502, 2001，相关期刊论文发表于 2002 年。会议论文 期刊论文
+假设初步结果是：方案 A 标称 EPE 最小，但离焦桥连；方案 B 标称误差略大，却在所有采样角合格；方案 C 模型窗口最大，但源需要设备无法实现的细碎强度分布。工程选择通常更接近 B。这个假设例子说明，最终判断来自目标和约束，而不是名称的“先进程度”。
 
-[6] X. Ma and G. R. Arce, “Pixel-based simultaneous source and mask optimization for resolution enhancement in optical lithography,” *Optics Express* 17(7), 5783-5793, 2009. 论文页面
+## 七、制造规则何时进入，决定了损失会在哪里发生
 
-[7] M. C. Tsai et al., “Full-chip source and mask optimization,” *Proceedings of SPIE* 7973, 79730A, 2011. 论文页面
+可以先放开约束寻找理想解，再输出清理；也可以每一步都施加规则；还可以先在松约束下探索，再逐步收紧。三种方式都可能有用，但其误差路径不同。
 
-[8] Y. Yang et al., “Advancements and challenges in inverse lithography technology, a review of artificial intelligence-based approaches,” *Light, Science & Applications* 14, 214, 2025. 论文页面
+事后清理容易移除光学上有用的小辅助岛，改变窄缝和局部相位关系。若不重新优化，原有窗口就可能丢失。强制每步硬投影则可能让梯度方向被频繁打断，导致停滞或局部振荡。延续方法试图逐渐从理想场过渡到可行几何，但需要设计惩罚权重和切换条件。
 
-[9] R. Chen et al., “DiffOPC, Differentiable edge-based optical proximity correction,” *Proceedings of ICCAD*, 2024. 论文页面
+此外，数字掩模 MRC 只是第一道门。掩模工艺校正、写入量化、吸收体轮廓与检测能力仍会改变最终可行性。一个曲线能否写出来，与能否在合理时间内写出、测准、检出缺陷和修复，是不同的问题。
 
-[10] S. Hwang et al., “Source mask optimization for High-NA EUV lithography,” *Proceedings of SPIE* 12955, 2024. 论文页面
+这种约束也解释了为什么像素越多不一定越好。若真实制造只能稳定控制某一尺度，把网格继续细化到远小于该尺度，可能主要增加模型噪声与输出复杂度，而不是可兑现的自由度。
 
-[11] Synopsys, *Proteus Optical Proximity Correction*, 2024. 技术资料
+## 八、AI 改变求解方式，不会自动改变问题类型
 
-[12] ASML, *Computational lithography*. 技术页面
+如果网络只预测边缘位移，它服务的是一组掩模参数；如果预测高自由度掩模场，它服务的是更宽的逆掩模搜索；如果连源也参与联合优化，问题才增加了 SMO 的变量。网络结构本身并不产生第四级工艺自由度。
 
-[13] Y. Liu and A. Zakhor, “Binary and phase shifting mask design for optical lithography,” *IEEE Transactions on Semiconductor Manufacturing* 5(2), 138-152, 1992. 论文页面
+DiffOPC 就是很好的反例：它对边缘表示传播梯度，让分段边缘使用可微优化。[[8]](https://arxiv.org/abs/2408.08969) 因而不能再用“有梯度的是 ILT，推边缘的是老 OPC”分类。
+
+自动微分计算的是给定模型的导数，不是对模型物理正确性的认证。若正向模型漏掉三维掩模或胶效应，导数算得再精确，也只是在准确地优化一个不完整问题。学习初值、代理仿真与真正的生产签核，需要分别评价。
+
+比较 AI 方法时，还应分开训练时间、局部推理时间和完整修正/验证时间。新层是否需要重训，训练集是否覆盖真实热点，最终是否回到独立物理模型，这些条件往往比网络名称更决定工程可用性。
+
+## 九、EUV 与 High-NA 增加的是物理和约束维度
+
+EUV 掩模是反射式三维结构，斜入射、吸收体和多层膜使方向相关效应更强。High-NA 又带来各向异性成像与更严苛的窗口要求。单纯使用薄掩模、标量模型得到的源—掩模组合，可能在更完整模型中失去优势。
+
+2024 年 imec 的 High-NA 随机逻辑金属研究，把光源、掩模 tone、吸收体、SRAF 和制造规则纳入方案评估。[[9]](https://doi.org/10.1117/12.3010869) 这项工作能证明相关协同问题正在被具体研究，不能推出所有 High-NA 工艺都采用同一组最优参数。
+
+严格按缩写，SMO 仍指 source 和 mask 的优化。当 absorber、resist、etch 或设计规则也可改变，研究已经接近更大的协同设计。用统一变量表描述它，比强行把所有新进展装进三个缩写更清楚。
+
+## 十、读论文或选流程时，按这个顺序追问
+
+先确认输出目标：优化到空中像、显影还是刻蚀，模型以什么晶圆数据校准。再确认可控变量：掩模边缘、场、拓扑，或还包含全局光源、剂量与材料。随后检查自由度对应的约束，尤其是最终硬件与制造几何能否实现。
+
+再看鲁棒性：哪些图形与工艺角进入目标，是否保留独立测试图形，是否检查工艺角之间的失效。平均损失、最坏误差和共同窗口各自说明什么，应该在结果中同时交代。
+
+最后才比较时间与性能。必须固定图形集合、光源、模型、规则、容差和硬件，说明是否包含二值化、MRC、全芯片数据准备与验证。小区域推理时间，不能直接当作完整掩模周转时间。
+
+这样看，三者既有区别，也能自然组合：SMO 选择整层共同照明与掩模策略，OPC/ILT 在固定源下完成高容量修正，严谨模型与晶圆数据决定能否签核。名称帮助组织讨论，变量、模型、约束和交付物才负责让讨论落地。
+
+## 参考文献
+
+以下在线资料统一访问于 **2026-10-25**。文中目标函数与示例为统一符号后的教学性归纳。
+
+1. C. A. Mack. *Fundamental Principles of Optical Lithography: The Science of Microfabrication*. Wiley, 2007. DOI: [10.1002/9780470723876](https://doi.org/10.1002/9780470723876).
+2. Synopsys. *Proteus Solutions: Full-Chip Mask Synthesis*. 官方技术文档, 2024. [PDF](https://www.synopsys.com/content/dam/synopsys/silicon/datasheets/proteus-ds.pdf).
+3. Y. Liu, A. Zakhor. “Binary and Phase Shifting Mask Design for Optical Lithography.” *IEEE Transactions on Semiconductor Manufacturing*, 5(2): 138–152, 1992. DOI: [10.1109/66.136275](https://doi.org/10.1109/66.136275).
+4. A. Poonawala, P. Milanfar. “Mask Design for Optical Microlithography—An Inverse Imaging Problem.” *IEEE Transactions on Image Processing*, 16(3): 774–788, 2007. DOI: [10.1109/TIP.2006.891332](https://doi.org/10.1109/TIP.2006.891332).
+5. A. E. Rosenbluth, S. Bukofsky, C. Fonseca, et al. “Optimum Mask and Source Patterns to Print a Given Shape.” *Journal of Microlithography, Microfabrication, and Microsystems*, 1(1): 13–30, 2002. DOI: [10.1117/1.1448500](https://doi.org/10.1117/1.1448500). 初步会议版：SPIE 4346, 2001。
+6. X. Ma, G. R. Arce. “Pixel-based Simultaneous Source and Mask Optimization for Resolution Enhancement in Optical Lithography.” *Optics Express*, 17(7): 5783–5793, 2009. DOI: [10.1364/OE.17.005783](https://doi.org/10.1364/OE.17.005783).
+7. M.-C. Tsai et al. “Full-chip Source and Mask Optimization.” *Proceedings of SPIE*, 7973: 79730A, 2011. DOI: [10.1117/12.881633](https://doi.org/10.1117/12.881633).
+8. G. Chen, H. Yang, H. Ren, B. Yu, D. Z. Pan. “Differentiable Edge-based OPC.” *ICCAD*, 2024. [作者预印本 arXiv:2408.08969](https://arxiv.org/abs/2408.08969).
+9. S. Hwang, W. Gillijns, S. De Gendt, R.-H. Kim. “Source Mask Optimization (SMO) Study for High-NA EUV Lithography to Achieve Single Patterning on Random Logic Metal.” *Proceedings of SPIE*, 12954: 129540X, 2024. DOI: [10.1117/12.3010869](https://doi.org/10.1117/12.3010869). [imec 官方书目](https://imec-publications.be/entities/publication/f98b3cc7-e696-483b-a979-8a8c86a14a0a).
