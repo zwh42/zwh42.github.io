@@ -64,8 +64,10 @@ $$
 
 灵敏度矩阵 $J$ 反映边缘之间的耦合。一个片段向外移动，不只影响与它正对的那一点，还可能改变旁边的线端与角部。因此，OPC 并非每条边各自修到零误差那么简单。
 
-![未经校正与经过 OPC 的图形对照](/assets/images/references/optical-proximity-correction.png)
-*图 1：通过改变输入掩模补偿输出图形，是 OPC 的基本任务；图示本身不区分边缘法与 ILT 求解器。来源：[Wikimedia Commons，Optical proximity correction.png](https://commons.wikimedia.org/wiki/File:Optical_proximity_correction.png)，LithoGuy，2010，公共领域（Public domain），未修改。*
+<figure class="technical-figure" id="fig-1">
+  <div class="figure-image"><a href="/assets/images/references/optical-proximity-correction.png" target="_blank" rel="noopener" aria-label="未经校正与经过 OPC 的图形对照，在新标签页查看大图"><img src="/assets/images/references/optical-proximity-correction.png" alt="未经校正与经过 OPC 的图形对照" width="518" height="762" loading="lazy" decoding="async"></a></div>
+  <figcaption markdown="span">图 1：通过改变输入掩模补偿输出图形，是 OPC 的基本任务；图示本身不区分边缘法与 ILT 求解器。来源：[Wikimedia Commons，Optical proximity correction.png](https://commons.wikimedia.org/wiki/File:Optical_proximity_correction.png)，LithoGuy，2010，公共领域（Public domain），未修改。</figcaption>
+</figure>
 
 OPC 的一个工程优势是，变量可以集中在当前误差附近，保留版图结构与层级，也便于控制修正幅度。对于大部分已经能打印的图形，这种表示可能比给整个区域分配像素变量更经济。局限在于，如果只移动既有边界，就很难主动改变拓扑或远处的辅助图形布局；系统往往再配合 SRAF 插入、重新分段或局部更自由的求解。
 

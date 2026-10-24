@@ -34,15 +34,16 @@ mathjax: true
 模型输入必须明确对应理想版图、OPC 后的掩模目标或写后实测三维掩模。
 
 
-三者不能直接互换。把理想多边形交给成像模型，等于假设掩模制造没有误差。在宽松节点，这类误差可能被工艺窗口吸收；到了低 (k_1)、强 OPC、EUV 或高数值孔径场景，它会进入边缘放置误差（EPE）和最佳焦面误差。
+三者不能直接互换。把理想多边形交给成像模型，等于假设掩模制造没有误差。在宽松节点，这类误差可能被工艺窗口吸收；到了低 $k_1$、强 OPC、EUV 或高数值孔径场景，它会进入边缘放置误差（EPE）和最佳焦面误差。
 
-<img src="/assets/images/references/photolithography-etching-process.svg" width="260" alt="正性光刻胶涂布、曝光、显影及刻蚀的纵向工艺示意">
-
-*图 1：Cmglee，Photolithography etching process（2011），[Wikimedia Commons 原文件页](https://commons.wikimedia.org/wiki/File:Photolithography_etching_process.svg)，[CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)，原文件未修改。图示正胶曝光、显影和图形转移的基本步骤，不按实际比例，也未画出本文全部光学、化学与计量过程。访问日期：2026-10-25。*
+<figure class="technical-figure" id="fig-1">
+  <div class="figure-image"><a href="/assets/images/references/photolithography-etching-process.svg" target="_blank" rel="noopener" aria-label="正性光刻胶涂布、曝光、显影及刻蚀的纵向工艺示意，在新标签页查看大图"><img src="/assets/images/references/photolithography-etching-process.svg" alt="正性光刻胶涂布、曝光、显影及刻蚀的纵向工艺示意" width="260" height="1300" loading="lazy" decoding="async"></a></div>
+  <figcaption markdown="span">图 1：Cmglee，Photolithography etching process（2011），[Wikimedia Commons 原文件页](https://commons.wikimedia.org/wiki/File:Photolithography_etching_process.svg)，[CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)，原文件未修改。图示正胶曝光、显影和图形转移的基本步骤，不按实际比例，也未画出本文全部光学、化学与计量过程。访问日期：2026-10-25。</figcaption>
+</figure>
 
 ## 掩模的三维电磁响应
 
-最便宜的掩模模型是薄掩模近似，也叫 Kirchhoff 模型。它把掩模视为没有厚度的二维复透过率函数：开口区透光，吸收区遮光，移相区再附加相位。掩模衍射谱可以直接由二维傅里叶变换得到，速度很快，适合全芯片 OPC。
+薄掩模近似又称 Kirchhoff 模型，计算成本较低。它把掩模视为没有厚度的二维复透过率函数：开口区透光，吸收区遮光，移相区再附加相位。掩模衍射谱可以直接由二维傅里叶变换得到，速度很快，适合全芯片 OPC。
 
 但真实掩模有厚度。当特征尺寸与曝光波长进入同一量级，或 EUV 多层膜、吸收体和侧壁不可忽略时，光会在材料界面反射、耦合并发生偏振转换，改变各衍射级次的振幅和相位。
 
@@ -85,21 +86,21 @@ OPC 还需要在焦点—剂量空间中评价各图形的共同工艺窗口，�
 
 ## 曝光动力学与潜像
 
-对化学放大型光刻胶（CAR），曝光不会直接“刻出”边界，而是让光致产酸剂（PAG）产生酸。一个常见简化描述是：
+对化学放大型光刻胶（CAR），曝光使光致产酸剂（PAG）产生酸。PAG 消耗可采用以下简化反应式描述：
 
 $$ \frac{\partial [\mathrm{PAG}]}{\partial t}=-C I[\mathrm{PAG}]. $$
 
-其中 (I) 是胶内局部光强，(C) 与感光速度有关。曝光后的输出不是几何轮廓，而是三维酸浓度或潜像分布。
+其中 $I$ 是胶内局部光强，$C$ 与感光速度有关。曝光后的状态以三维酸浓度或潜像分布描述。
 
-这里还必须区分胶体系。经典 Dill ABC 模型首先针对常规正性胶中的感光物种消耗，写作 $α=Am+B$ 和 $∂_t m=-CIm$；它不是完整的化学放大胶产酸—淬灭—脱保护模型。将类似的一阶感光反应式用于 PAG 是一种简化，必须重新说明反应物和参数含义，不能把 DNQ 胶的 ABC 参数直接移植过来。[[6]](https://www.iue.tuwien.ac.at/phd/kirchauer/node69.html)
+这里还必须区分胶体系。经典 Dill ABC 模型首先针对常规正性胶中的感光物种消耗，写作 $\alpha=Am+B$ 和 $\partial_t m=-CIm$；它不是完整的化学放大胶产酸—淬灭—脱保护模型。将类似的一阶感光反应式用于 PAG 是一种简化，必须重新说明反应物和参数含义，不能把 DNQ 胶的 ABC 参数直接移植过来。[[6]](https://www.iue.tuwien.ac.at/phd/kirchauer/node69.html)
 
-这里容易出现两个误解：光刻胶响应不是把空中像乘一个常数；等强度线也不是天然的胶边界。固定阈值只是速度优先的工程近似，不能被当成真实光化学机制。
+光刻胶响应包含非线性光化学与后续材料过程。固定阈值以空中像等值线近似胶边界，适用于经校准的受限条件，无法完整描述这些机制。
 
 ## 后曝光烘烤的反应与扩散
 
 曝光后烘烤（PEB）期间，酸扩散并催化聚合物脱保护，淬灭剂与酸中和。这是一个耦合的反应—扩散问题，决定显影时哪里溶得快、哪里溶得慢。
 
-扩散一方面能平滑曝光阶段的微观不均匀性，另一方面也会推宽边缘，甚至连接本不该连通的区域。扩散长度粗略随 √(2Dt) 增长，因此温度、时间和扩散系数本身就是成像参数。
+扩散一方面能平滑曝光阶段的微观不均匀性，另一方面也会推宽边缘，甚至连接本不该连通的区域。扩散长度粗略随 $\sqrt{2Dt}$ 增长，因此温度、时间和扩散系数本身就是成像参数。
 
 在先进节点，光子散粒噪声、PAG 离散分布和二次电子先造成潜像波动，PEB 再把这些波动传递为线边粗糙度、局部 CD 和缺失或桥连概率。[[1]](https://www.iisb.fraunhofer.de/de/press_media/pressemitteilungen/pressearchiv/archiv_2026/frits-zernike-award.html)[[2]](https://doi.org/10.1515/aot-2012-0037)
 
@@ -151,7 +152,7 @@ Kafai Lai 把从掩模一直预测到刻蚀后晶圆轮廓、再交给器件模�
 - 全芯片紧凑模型回答完整掩模能否通过验证、哪些边缘要移动、哪些热点会在工艺窗口边缘失效。
 
 
-严谨模型、紧凑模型与实验约束共同构成闭环。少了紧凑模型，会“很准但算不动”；少了严谨模型和实验约束，则可能“算得动但不可信”。
+严谨模型提供物理参考，紧凑模型承担全芯片计算，实验约束参数并检验预测。三者分别控制物理近似、计算成本与实际适用范围。
 
 ## 前向模型中的掩模优化
 
@@ -159,7 +160,7 @@ Kafai Lai 把从掩模一直预测到刻蚀后晶圆轮廓、再交给器件模�
 
 $$ C_{\mathrm{wafer}}=\mathcal F(M;\mathbf p). $$
 
-其中 (M) 是掩模，(p) 包含光源、像差、膜堆栈、光刻胶、刻蚀、焦点和曝光剂量等工艺参数。
+其中 $M$ 是掩模，$\mathbf p$ 包含光源、像差、膜堆栈、光刻胶、刻蚀、焦点和曝光剂量等工艺参数。
 
 OPC 要做的是给定目标轮廓 C_target，寻找一个掩模，使得：
 
@@ -208,8 +209,10 @@ $$
 推广到整个链，令 $\mathbf x_j$ 表示第 $j$ 个模块的输出状态，其局部线性化为
 
 $$
-\delta\mathbf x_{j+1}=J_j\delta\mathbf x_j+B_j\delta\mathbf p_j,
-\qquad J_j=\frac{\partial\mathcal F_j}{\partial\mathbf x_j}.
+\begin{aligned}
+\delta\mathbf x_{j+1}&=J_j\delta\mathbf x_j+B_j\delta\mathbf p_j, \\
+J_j&=\frac{\partial\mathcal F_j}{\partial\mathbf x_j}.
+\end{aligned}
 $$
 
 上游误差经过后续 Jacobian 连乘才到达最终边缘。这个式子解释了为什么同样的掩模制造精度，对不同 pitch 或不同照明的晶圆结果可以不同：下游传递增益本来就不同。
@@ -236,8 +239,10 @@ $$
 对于 EUV 等对离散事件敏感的情形，平均轮廓只描述分布的一部分。理想化地，面积 $A$ 上吸收光子数的期望可写为
 
 $$
-\bar N=\frac{D A\,a}{hc/\lambda},
-\qquad\frac{\sigma_N}{\bar N}=\frac1{\sqrt{\bar N}},
+\begin{aligned}
+\bar N&=\frac{D A\,a}{hc/\lambda}, \\
+\frac{\sigma_N}{\bar N}&=\frac1{\sqrt{\bar N}},
+\end{aligned}
 $$
 
 其中 $a$ 是该面积内的有效吸收比例，假设独立光子且计数服从泊松分布。这个教学关系说明剂量、波长与采样体积为什么会影响统计波动；它并不把真实胶中的二次电子、反应与分子分布简化成只有一种噪声。[[1]](https://www.iisb.fraunhofer.de/de/press_media/pressemitteilungen/pressearchiv/archiv_2026/frits-zernike-award.html)
@@ -269,7 +274,7 @@ $$
 9. 计量与校准；
 10. 随机性、工艺波动与设备漂移。
 
-只数前向物理转换，是前 8 项；把闭环和随机性也单列，就是 10 项左右。再把光源、像差、掩模写入、设备漂移和器件性能分别拆开，十几个模型也不奇怪。
+上述前八项描述前向物理转换，后两项分别约束观测与校准，以及过程波动。进一步拆分光源、像差、写入或设备漂移时，模块数量会增加；划分应以接口和验证需求为依据。
 
 模型划分的有效性取决于接口信息是否充分、严谨模型到紧凑模型的近似是否经过验证，以及组合后的输出能否预测独立实验。概念模型可以采用较少状态，工艺开发与产品修正则应按最终平面及误差预算选择保真度。
 

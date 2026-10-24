@@ -23,9 +23,10 @@ mathjax: true
 
 OPC 是为了补偿邻近效应而修改掩模的任务；ILT 是用光刻前向模型求解逆问题的一类方法；curvilinear 描述的是输出形状。ILT 可以输出经过矩形化的掩模，边缘式 OPC 也可以直接优化曲线，因此两者没有一一对应关系。
 
-![光学邻近效应修正的设计、掩模与成像示意](/assets/images/references/optical-proximity-correction.png)
-
-*图 1：LithoGuy，Optical proximity correction（2010），[Wikimedia Commons 原文件页](https://commons.wikimedia.org/wiki/File:Optical_proximity_correction.png)，作者释入公有领域（public domain），未修改。该图是 OPC 几何原理示意，既不是 SEM 数据，也不是本文所讨论的曲线掩模制造结果。访问日期：2026-10-25。*
+<figure class="technical-figure" id="fig-1">
+  <div class="figure-image"><a href="/assets/images/references/optical-proximity-correction.png" target="_blank" rel="noopener" aria-label="光学邻近效应修正的设计、掩模与成像示意，在新标签页查看大图"><img src="/assets/images/references/optical-proximity-correction.png" alt="光学邻近效应修正的设计、掩模与成像示意" width="518" height="762" loading="lazy" decoding="async"></a></div>
+  <figcaption markdown="span">图 1：LithoGuy，Optical proximity correction（2010），[Wikimedia Commons 原文件页](https://commons.wikimedia.org/wiki/File:Optical_proximity_correction.png)，作者释入公有领域（public domain），未修改。该图是 OPC 几何原理示意，既不是 SEM 数据，也不是本文所讨论的曲线掩模制造结果。访问日期：2026-10-25。</figcaption>
+</figure>
 
 目标晶圆图形通常含有直角，但投影光学系统带宽有限，高频几何细节不能原样传到像面。允许掩模边界自由弯曲，相当于增加了一组可调的衍射自由度：优化器可以调整不同频率和方向的复振幅，使光强等值线在目标边缘附近有合适位置与斜率。
 
@@ -44,9 +45,10 @@ $$
 只优化标称误差可能得到狭窄工艺窗口。更合理的工程目标会覆盖焦点、剂量及其他已定义条件：
 
 $$
-\min_M\;\sum_{c\in\mathcal C}w_cD\!\left(\mathcal F_c(M),T\right)
-+\lambda R_{\mathrm{shape}}(M),
-\qquad M\in\mathcal A_{\mathrm{mask}}.
+\begin{aligned}
+&\min_M\;\sum_{c\in\mathcal C}w_cD\!\left(\mathcal F_c(M),T\right) +\lambda R_{\mathrm{shape}}(M), \\
+&M\in\mathcal A_{\mathrm{mask}}.
+\end{aligned}
 $$
 
 $\mathcal A_{\mathrm{mask}}$ 是可制造掩模集合，至少约束最小宽度、最小间距、局部曲率、孤立碎片与拓扑；$R_{\mathrm{shape}}$ 则可以抑制不稳定的边界振荡。约束和正则化不是同一个东西：一个小权重惩罚不能保证没有违规，最终还需要独立 MRC。
@@ -56,8 +58,10 @@ $\mathcal A_{\mathrm{mask}}$ 是可制造掩模集合，至少约束最小宽度
 更接近实物的关系还要把掩模制造写进去：
 
 $$
-M_{\mathrm{phys}}=\mathcal P(G,\mathbf d;\boldsymbol\psi),
-\qquad C_{w,c}=\mathcal F_c(M_{\mathrm{phys}}).
+\begin{aligned}
+M_{\mathrm{phys}}&=\mathcal P(G,\mathbf d;\boldsymbol\psi), \\
+C_{w,c}&=\mathcal F_c(M_{\mathrm{phys}}).
+\end{aligned}
 $$
 
 $G$ 是交付几何，$\mathbf d$ 是电子束剂量图，$\mathcal P$ 包含写入、掩模胶、显影和刻蚀，$\boldsymbol\psi$ 是掩模工艺参数。OPC 求的是晶圆目标，MPC 求的是把交付数据制造成所需物理掩模。两者是嵌套的逆问题。若前者假设理想曲线，后者只能近似制造，必须把后者的偏差重新传回晶圆模型。

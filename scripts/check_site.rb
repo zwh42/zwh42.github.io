@@ -4,6 +4,7 @@ require 'json'
 require 'nokogiri'
 require 'uri'
 require 'yaml'
+require 'digest'
 
 root = File.expand_path(ARGV.fetch(0, '_site'))
 source = File.expand_path('..', __dir__)
@@ -88,3 +89,26 @@ routes.each do |route|
   end
 end
 puts "PASS: #{routes.size} pages share the design; #{link_count} local links/assets resolve"
+
+image_manifest = JSON.parse(File.read(File.join(source, 'assets/images/references/SOURCES.json')))
+image_sources = image_manifest.to_h do |entry|
+  file = File.expand_path(entry.fetch('file'), File.join(source, 'assets/images/references'))
+  check(Digest::SHA256.file(file).hexdigest == entry.fetch('sha256'), "reference image matches recorded original/crop: #{entry['file']}")
+  [file.delete_prefix(source), entry]
+end
+figure_count = 0
+posts.each do |post|
+  doc = Nokogiri::HTML(File.read(File.join(root, post['url'])))
+  doc.css('.article-body img').each do |image|
+    entry = image_sources[image['src']]
+    check(entry, "image has a provenance record on #{post['url']}: #{image['src']}")
+    figure = image.ancestors('figure.technical-figure').first
+    caption = figure&.at_css('figcaption')
+    check(caption && !image['alt'].to_s.strip.empty?, "image has caption and alt text on #{post['url']}")
+    links = caption.css('a').map { |link| link['href'] }
+    check((links & [entry['source_page'], entry['original_url']]).any?, "caption links to original source on #{post['url']}")
+    check(links.include?(entry['license_url']), "caption links to reuse license on #{post['url']}")
+    figure_count += 1
+  end
+end
+puts "PASS: #{figure_count} figures have source links, reuse licenses and unchanged source-image hashes"

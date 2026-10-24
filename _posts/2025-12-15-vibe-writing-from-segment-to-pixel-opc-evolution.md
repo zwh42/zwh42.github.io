@@ -47,10 +47,10 @@ $\mathcal P$ 是选定的工艺角，$L$ 衡量晶圆误差，$R$ 惩罚掩模�
 若修正幅度较小，局部关系可近似为
 
 $$
-\mathbf e(\mathbf u+\Delta\mathbf u)
-\approx \mathbf e(\mathbf u)+J\Delta\mathbf u,
-\qquad
-J_{ij}=\frac{\partial e_i}{\partial u_j}.
+\begin{aligned}
+\mathbf e(\mathbf u+\Delta\mathbf u) &\approx \mathbf e(\mathbf u)+J\Delta\mathbf u, \\
+J_{ij}&=\frac{\partial e_i}{\partial u_j}.
+\end{aligned}
 $$
 
 $J$ 是灵敏度矩阵。它说明某一片段的移动，会影响哪些晶圆边缘。由于成像存在空间耦合，矩阵一般不只在对角线上有元素；不能把每条边当成互不相关的独立旋钮。一个带正则化的局部更新示例是
@@ -67,8 +67,10 @@ $$
 
 因此，片段越多不一定越好。分段过粗会丢失角部与线端的控制能力；分段过细会增加变量、病态灵敏度和几何碎片。评估点若只覆盖主边中部，还可能出现“采样点 EPE 很小，角部仍失效”的情况。表示密度和误差采样密度必须共同设计。
 
-![设计图形、校正掩模与晶圆成像的对照](/assets/images/references/optical-proximity-correction.png)
-*图 1：OPC 示意，重点是预先改变掩模，以补偿成像后的形状偏差；图中不是某个工艺节点的定量测量。来源：[Wikimedia Commons，Optical proximity correction.png](https://commons.wikimedia.org/wiki/File:Optical_proximity_correction.png)，LithoGuy，2010，公共领域（Public domain），未修改。*
+<figure class="technical-figure" id="fig-1">
+  <div class="figure-image"><a href="/assets/images/references/optical-proximity-correction.png" target="_blank" rel="noopener" aria-label="设计图形、校正掩模与晶圆成像的对照，在新标签页查看大图"><img src="/assets/images/references/optical-proximity-correction.png" alt="设计图形、校正掩模与晶圆成像的对照" width="518" height="762" loading="lazy" decoding="async"></a></div>
+  <figcaption markdown="span">图 1：OPC 示意，重点是预先改变掩模，以补偿成像后的形状偏差；图中不是某个工艺节点的定量测量。来源：[Wikimedia Commons，Optical proximity correction.png](https://commons.wikimedia.org/wiki/File:Optical_proximity_correction.png)，LithoGuy，2010，公共领域（Public domain），未修改。</figcaption>
+</figure>
 
 ## 规则式与模型式 OPC
 
@@ -107,9 +109,10 @@ $$
 $h_k$ 是相干核，$\lambda_k$ 是对应权重，$*$ 表示卷积。该形式使 FFT 和并行计算可以反复利用。设简化胶响应为
 
 $$
-Z=\sigma\!\left(a(I-I_{\mathrm{th}})\right),
-\qquad
-\sigma(x)=\frac{1}{1+e^{-x}},
+\begin{aligned}
+Z&=\sigma\!\left(a(I-I_{\mathrm{th}})\right), \\
+\sigma(x)&=\frac{1}{1+e^{-x}},
+\end{aligned}
 $$
 
 就能通过链式法则把 $L(Z,T)$ 的梯度传播回掩模。sigmoid 是便于优化的平滑阈值示例，不能替代经晶圆校准的完整胶模型。[[1]](https://doi.org/10.1002/9780470723876) [[2]](https://doi.org/10.1109/TIP.2006.891332)
@@ -150,9 +153,10 @@ $$
 制造成本取决于最小线宽和间距、曲率、狭缝、孤岛、数据量以及掩模检测与修复要求。优化中可加入二值化、周长或总变分约束，例如
 
 $$
-R_{\mathrm{bin}}(M)=\sum_i m_i^2(1-m_i)^2,
-\qquad
-R_{\mathrm{TV}}(M)=\int|\nabla M|\,d\mathbf r.
+\begin{aligned}
+R_{\mathrm{bin}}(M)&=\sum_i m_i^2(1-m_i)^2, \\
+R_{\mathrm{TV}}(M)&=\int|\nabla M|\,d\mathbf r.
+\end{aligned}
 $$
 
 它们分别鼓励两种透射状态、抑制边界复杂度，但不能代替精确 MRC（掩模规则检查）。周长短的图形仍可能带有过窄颈部；满足像素邻域规则的图形，经过几何转换和掩模工艺后仍可能违规。

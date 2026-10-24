@@ -129,9 +129,10 @@ $$
 
 ## 环形源与多极照明的方向响应
 
-![常规、环形和多极照明的示意图](/assets/images/references/illumination-shapes.png)
-
-*图：EUV illumination shapes。作者 Guiding light，2017；来源为 [Wikimedia Commons 文件页](https://commons.wikimedia.org/wiki/File:EUV_illumination_shapes.png)，采用 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) 许可；此处未修改。图示用于比较照明形状，不表示本文数值例子的具体源设置。*
+<figure class="technical-figure" id="fig-1">
+  <div class="figure-image"><a href="/assets/images/references/illumination-shapes.png" target="_blank" rel="noopener" aria-label="常规、环形和多极照明的示意图，在新标签页查看大图"><img src="/assets/images/references/illumination-shapes.png" alt="常规、环形和多极照明的示意图" width="929" height="661" loading="lazy" decoding="async"></a></div>
+  <figcaption markdown="span">图：EUV illumination shapes。作者 Guiding light，2017；来源为 [Wikimedia Commons 文件页](https://commons.wikimedia.org/wiki/File:EUV_illumination_shapes.png)，采用 [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) 许可；此处未修改。图示用于比较照明形状，不表示本文数值例子的具体源设置。</figcaption>
+</figure>
 
 常规圆源在中心附近分配光能；环形源去掉中心部分，使较大入射角获得更高相对权重；偶极源把能量集中在两个相对方向；四极源同时给两组方向提供支持。这些变化会改变参与干涉的级次组合，不能简单排成一个从差到好的序列。
 

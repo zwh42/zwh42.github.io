@@ -5,5 +5,6 @@
 {% endif %}
 {% if page.math or page.mathjax %}
 <script>window.MathJax = {tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]}};</script>
-<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script defer src="{{ '/assets/js/math-layout.js' | relative_url }}"></script>
 {% endif %}

@@ -40,9 +40,10 @@ $$
 
 空中像通常指尚未加入完整胶膜光学响应的理想像面分布。光进入实际胶层之后，还会吸收，并在胶、抗反射层和基底之间反射、干涉。胶内像需要描述随深度变化的场与吸收能量；它可能具有驻波，也可能受膜厚和基底反射率影响。在胶表面看到的二维空中像，并不能单独决定整层胶的三维曝光状态。[[1]](#ref-1)
 
-![教材中的双光束干涉强度峰谷](/assets/images/wechat/back-to-basics-fitting-01.png)
-
-*图：干涉产生连续的强度峰谷。来源：Konijnenberg、Adam、Urbach，开放教材 [BSc Optics，第 2 版（2024）](https://doi.org/10.59490/tb.91)，图 5.8，书页 125（[原始 PDF 第 130 页](https://books.open.tudelft.nl/home/catalog/download/174/319/559?inline=1#page=130)），采用 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) 许可。本图从教材页面裁切，未改图内内容；这里用于解释光场叠加产生强度分布的原理。*
+<figure class="technical-figure" id="fig-1">
+  <div class="figure-image"><a href="/assets/images/wechat/back-to-basics-fitting-01.png" target="_blank" rel="noopener" aria-label="教材中的双光束干涉强度峰谷，在新标签页查看大图"><img src="/assets/images/wechat/back-to-basics-fitting-01.png" alt="教材中的双光束干涉强度峰谷" width="1016" height="560" loading="lazy" decoding="async"></a></div>
+  <figcaption markdown="span">图：干涉产生连续的强度峰谷。来源：Konijnenberg、Adam、Urbach，开放教材 [BSc Optics，第 2 版（2024）](https://doi.org/10.59490/tb.91)，图 5.8，书页 125（[原始 PDF 第 130 页](https://books.open.tudelft.nl/home/catalog/download/174/319/559?inline=1#page=130)），采用 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) 许可。本图从教材页面裁切，未改图内内容；这里用于解释光场叠加产生强度分布的原理。</figcaption>
+</figure>
 
 ## 强度分布与曝光剂量
 
@@ -142,7 +143,7 @@ $$
 C=\frac{I_{\max}-I_{\min}}{I_{\max}+I_{\min}}
 $$
 
-只看极值。两张图即使峰谷值一样，也可能在阈值附近具有不同坡度。NILS 增加了“在哪里切、该处多陡”的信息，因此对于边缘位置更直接；但它也不是完整良率指标。
+只依赖全局极值。两幅图像即使具有相同峰谷，也可能在阈值附近具有不同斜率。NILS 在预期边缘位置评价局部响应，与边缘位移直接相关；完整良率分析仍需包含材料响应及随机失效。
 
 ## 周期图像的解析算例
 

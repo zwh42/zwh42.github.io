@@ -51,8 +51,10 @@ $$
 每个 $n$ 对应一个衍射级次。正入射、标量、薄掩膜近似下，投影瞳函数 $P$ 只接受一定范围的横向空间频率：
 
 $$
-E(x)=\sum_n a_nP(n/p)e^{i2\pi nx/p},
-\qquad I(x)=|E(x)|^2.
+\begin{aligned}
+E(x)&=\sum_n a_nP(n/p)e^{i2\pi nx/p}, \\
+I(x)&=|E(x)|^2.
+\end{aligned}
 $$
 
 理想圆形瞳的场频率支撑半径为 $NA/\lambda$。被瞳拒绝的级次不能参与干涉；保留下来的级次构成连续的强度分布，而不是原图形的一次简单几何缩放。这里必须先叠加场、再求模平方，不能直接把掩膜二值图与一个强度模糊核卷积，就当作通用光刻模型。[[3]](#ref-3)
@@ -108,15 +110,18 @@ ILT 通常放宽几何表达，使掩膜能够通过像素、水平集或曲线�
 SMO 进一步把光源 $S$ 也作为变量：
 
 $$
-\min_{m,S}L\!\left(\mathcal F(m,S),C_{\rm tar}\right),
-\qquad S\geq0,\quad \int S\,d\mathbf s=1.
+\begin{aligned}
+&\min_{m,S}L\!\left(\mathcal F(m,S),C_{\rm tar}\right), \\
+S\geq0,\quad \int S\,d\mathbf s&=1.
+\end{aligned}
 $$
 
 照明改变衍射级次进入瞳的位置及其相对权重，掩膜改变这些级次的复振幅。两者耦合，因此源与掩膜的联合设计具有物理依据。Rosenbluth 等人在 2001 年的研究已经明确展示了这一问题，也说明了早期示例针对小范围二维图形；不能把局部研究结果直接外推成所有产品层的收益。[[5]](#ref-5)
 
-![通过掩膜修正补偿光学邻近效应的示意图](/assets/images/references/optical-proximity-correction.png)
-
-*图：Optical proximity correction。作者 LithoGuy，2010；来源为 [Wikimedia Commons 文件页](https://commons.wikimedia.org/wiki/File:Optical_proximity_correction.png)，作者将其释入公有领域；此处未修改。图示表达目标、预修正掩膜与成像结果的关系，不代表特定工艺的定量预测。*
+<figure class="technical-figure" id="fig-1">
+  <div class="figure-image"><a href="/assets/images/references/optical-proximity-correction.png" target="_blank" rel="noopener" aria-label="通过掩膜修正补偿光学邻近效应的示意图，在新标签页查看大图"><img src="/assets/images/references/optical-proximity-correction.png" alt="通过掩膜修正补偿光学邻近效应的示意图" width="518" height="762" loading="lazy" decoding="async"></a></div>
+  <figcaption markdown="span">图：Optical proximity correction。作者 LithoGuy，2010；来源为 [Wikimedia Commons 文件页](https://commons.wikimedia.org/wiki/File:Optical_proximity_correction.png)，作者将其释入公有领域；此处未修改。图示表达目标、预修正掩膜与成像结果的关系，不代表特定工艺的定量预测。</figcaption>
+</figure>
 
 ## 边缘修正的局部线性模型
 

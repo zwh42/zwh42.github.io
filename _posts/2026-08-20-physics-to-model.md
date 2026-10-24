@@ -83,9 +83,10 @@ OPC 开发周期还受到物理实验与数据准备的限制。测试掩模要�
 
 这里的光源通常指照明光瞳上的强度分布，而非光源功率本身。
 
-![环形、偶极与四极等照明光瞳形状示意](/assets/images/references/illumination-shapes.png)
-
-*图 1：Guiding light，EUV illumination shapes（2017），[Wikimedia Commons 原文件页](https://commons.wikimedia.org/wiki/File:EUV_illumination_shapes.png)，[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)，未修改。它只示意不同光源形状，不代表本文案例实际量到的 pupil、偏振或机台 recipe。访问日期：2026-10-25。*
+<figure class="technical-figure" id="fig-1">
+  <div class="figure-image"><a href="/assets/images/references/illumination-shapes.png" target="_blank" rel="noopener" aria-label="环形、偶极与四极等照明光瞳形状示意，在新标签页查看大图"><img src="/assets/images/references/illumination-shapes.png" alt="环形、偶极与四极等照明光瞳形状示意" width="929" height="661" loading="lazy" decoding="async"></a></div>
+  <figcaption markdown="span">图 1：Guiding light，EUV illumination shapes（2017），[Wikimedia Commons 原文件页](https://commons.wikimedia.org/wiki/File:EUV_illumination_shapes.png)，[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)，未修改。它只示意不同光源形状，不代表本文案例实际量到的 pupil、偏振或机台 recipe。访问日期：2026-10-25。</figcaption>
+</figure>
 
 光源的候选方案来自待印图形和工艺目标。工程师会准备一组有代表性的局部图形或量测结构，覆盖关键节距、密集和孤立图形、线端、端到端、拐角、接触孔、SRAM 以及历史热点。SMO 工具改变光瞳中各位置的照明强度，同时调整主图形或 SRAF，并在多个评价量之间求折中。
 
@@ -349,10 +350,10 @@ $\mathcal H$ 是计量与抽边过程，$\boldsymbol\phi$ 是计量参数，$\bo
 若先采用输出噪声模型，残差 $\mathbf r=\mathbf y-\mathbf g(\boldsymbol\theta)$ 的加权目标可写为
 
 $$
-\widehat{\boldsymbol\theta}=\arg\min_{\boldsymbol\theta}
-\mathbf r^\mathsf T\Sigma^{-1}\mathbf r
-+\lambda R(\boldsymbol\theta),
-\qquad \boldsymbol\theta\in\Theta_{\mathrm{phys}}.
+\begin{aligned}
+\widehat{\boldsymbol\theta}&=\arg\min_{\boldsymbol\theta} \mathbf r^\mathsf T\Sigma^{-1}\mathbf r +\lambda R(\boldsymbol\theta), \\
+&\boldsymbol\theta\in\Theta_{\mathrm{phys}}.
+\end{aligned}
 $$
 
 $\Sigma$ 是量测协方差，$\Theta_{\mathrm{phys}}$ 是物理可接受参数域。CD 点若来自同一曝光场，共同的焦点位置偏差会使它们相关；一条 SEM 轮廓上相邻点也不独立。用对角矩阵代替全部协方差是可以采用的工程近似，但要评估这种近似是否造成某些轮廓被过度加权。
@@ -360,9 +361,11 @@ $\Sigma$ 是量测协方差，$\Theta_{\mathrm{phys}}$ 是物理可接受参数�
 辨识能力由噪声归一化的敏感度决定。对参数作局部线性化：
 
 $$
-\Delta\mathbf y\approx J\Delta\boldsymbol\theta,
-\qquad J_{ij}=\frac{\partial g_i}{\partial\theta_j},
-\qquad A=\Sigma^{-1/2}J=U\operatorname{diag}(s_k)V^\mathsf T.
+\begin{aligned}
+\Delta\mathbf y&\approx J\Delta\boldsymbol\theta, \\
+J_{ij}&=\frac{\partial g_i}{\partial\theta_j}, \\
+A&=\Sigma^{-1/2}J=U\operatorname{diag}(s_k)V^\mathsf T.
+\end{aligned}
 $$
 
 很小的奇异值 $s_k$ 表示沿对应参数组合改变，预测响应仍被噪声淹没。此时得到唯一的优化器输出，不等于数据给出了唯一的物理解释。多 NA、多节距和多图形数据联合校准，能够增加独立约束，但仍要检查它们是否真的改变敏感度方向。[[27]](https://doi.org/10.1016/S0167-9317(02)00438-0)
@@ -398,8 +401,10 @@ IBM 的自动样本选择研究给出在设计覆盖与量测成本之间折中�
 如果输出边缘为 $\mathbf c(\boldsymbol\theta)$，参数协方差为 $\Sigma_\theta$，局部传播为
 
 $$
-\Sigma_c\approx G\Sigma_\theta G^\mathsf T,
-\qquad G=\frac{\partial\mathbf c}{\partial\boldsymbol\theta}.
+\begin{aligned}
+\Sigma_c&\approx G\Sigma_\theta G^\mathsf T, \\
+G&=\frac{\partial\mathbf c}{\partial\boldsymbol\theta}.
+\end{aligned}
 $$
 
 这个结果只反映已定义模型与参数的不确定度，不包含遗漏物理的系统偏差。若不同合理模型在训练集同样好、在某类产品图形预测分歧很大，这种分歧本身就应触发额外验证。不能因为参数置信区间很窄，就宣布模型形式误差也很小。

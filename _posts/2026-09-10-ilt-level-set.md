@@ -24,8 +24,10 @@ Osher 与 Sethian 的界面演化方法为这一表示提供了数值基础，�
 设二维标量函数为 $\phi(x,y)$，约定透光区域内部为负，外部为正：
 
 $$
-\Omega=\{\mathbf x:\phi(\mathbf x)<0\},\qquad
-\Gamma=\partial\Omega=\{\mathbf x:\phi(\mathbf x)=0\}.
+\begin{aligned}
+\Omega&=\{\mathbf x:\phi(\mathbf x)<0\}, \\
+\Gamma&=\partial\Omega=\{\mathbf x:\phi(\mathbf x)=0\}.
+\end{aligned}
 $$
 
 相应的理想二值透过率是
@@ -38,9 +40,10 @@ $$
 
 初始化常使用符号距离函数：$\lvert\phi\rvert$ 等于到最近边界的距离，在光滑且最近点唯一的地方有 $\lvert\nabla\phi\rvert=1$。此时函数值有明确的几何尺度，计算法向与曲率也较稳定。水平集本身并不要求处处都是距离函数。[[2]](#ref-2)
 
-![隐式曲面与其平面截线，展示水平集表示如何对应不同连通形状](/assets/images/references/level-set-method.png)
-
-*图 1．用曲面与平面的交线理解隐式边界。图仅解释水平集表示，不是掩模优化结果，也不表示各截面都是一次优化的连续迭代。来源：[Wikimedia Commons，Level set method.png](https://commons.wikimedia.org/wiki/File:Level_set_method.png)，Nicoguaro，2018，基于 Oleg Alexandrov 的早期示意；[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。原图未修改。*
+<figure class="technical-figure" id="fig-1">
+  <div class="figure-image"><a href="/assets/images/references/level-set-method.png" target="_blank" rel="noopener" aria-label="隐式曲面与其平面截线，展示水平集表示如何对应不同连通形状，在新标签页查看大图"><img src="/assets/images/references/level-set-method.png" alt="隐式曲面与其平面截线，展示水平集表示如何对应不同连通形状" width="2774" height="1662" loading="lazy" decoding="async"></a></div>
+  <figcaption markdown="span">图 1．用曲面与平面的交线理解隐式边界。图仅解释水平集表示，不是掩模优化结果，也不表示各截面都是一次优化的连续迭代。来源：[Wikimedia Commons，Level set method.png](https://commons.wikimedia.org/wiki/File:Level_set_method.png)，Nicoguaro，2018，基于 Oleg Alexandrov 的早期示意；[CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)。原图未修改。</figcaption>
+</figure>
 
 通过网格间插值可以得到零等值线，使边界位置在网格单元内连续变化。其精度仍受网格、插值、曲率估计及轮廓矢量化限制，最小可靠几何尺度需要由收敛实验确定。
 
@@ -61,8 +64,10 @@ $$
 平均工艺误差与最坏情形误差也不同：
 
 $$
-J_{\rm avg}=\sum_qw_qD_q,\qquad
-J_{\rm worst}=\max_qD_q.
+\begin{aligned}
+J_{\rm avg}&=\sum_qw_qD_q, \\
+J_{\rm worst}&=\max_qD_q.
+\end{aligned}
 $$
 
 前者允许少数困难条件被其他条件抵消，后者更关注最差工艺角，却可能受单个异常采样点支配。2011 年的鲁棒水平集 ILT 论文使用包含离焦与像差变化的期望目标，说明鲁棒性必须进入问题定义，而不能在最佳焦点优化结束后靠检查“补出来”。[[4]](#ref-4)
@@ -72,8 +77,10 @@ $$
 用 SOCS 形式举例，固定工艺条件时可把空中像写成
 
 $$
-I(\mathbf x)=\sum_{k=1}^{K}\lambda_k
-|u_k(\mathbf x)|^2,\qquad u_k=h_k*m.
+\begin{aligned}
+I(\mathbf x)&=\sum_{k=1}^{K}\lambda_k |u_k(\mathbf x)|^2, \\
+u_k&=h_k*m.
+\end{aligned}
 $$
 
 $h_k$ 是复数相干卷积核，$\lambda_k\geq0$。这一步的水平集表示与光学模型是独立模块：可以更换掩模参数化而保留成像器，也可以提高成像模型保真度而保留水平集优化框架。
@@ -81,8 +88,10 @@ $h_k$ 是复数相干卷积核，$\lambda_k\geq0$。这一步的水平集表示�
 若用平滑阈值近似胶响应，令
 
 $$
-r=\sigma\!\left(a(I-I_{\rm th})\right),\qquad
-D=\frac12\int(r-T)^2\,d\mathbf x,
+\begin{aligned}
+r&=\sigma\!\left(a(I-I_{\rm th})\right), \\
+D&=\frac12\int(r-T)^2\,d\mathbf x,
+\end{aligned}
 $$
 
 则传到光强的残差为
@@ -96,10 +105,10 @@ $a$ 过小，优化的是过度模糊的轮廓；$a$ 过大，绝大多数像素
 对于实数掩模扰动，利用卷积的伴随可以得到
 
 $$
-g_m=\frac{\delta D}{\delta m}
-=2\operatorname{Re}\sum_k\lambda_k
-h_k^{\dagger}*\left(g_Iu_k\right),
-\qquad h_k^{\dagger}(\mathbf x)=h_k^*(-\mathbf x).
+\begin{aligned}
+g_m&=\frac{\delta D}{\delta m} =2\operatorname{Re}\sum_k\lambda_k h_k^{\dagger}*\left(g_Iu_k\right), \\
+h_k^{\dagger}(\mathbf x)&=h_k^*(-\mathbf x).
+\end{aligned}
 $$
 
 这一式由上述模型的链式法则得到：前向计算各通道电场，反向经共轭翻转核传回图像残差。不同复数梯度、归一化和 FFT 约定可以产生不同代码形式，方向导数则应保持一致。
@@ -167,10 +176,10 @@ $$
 随演化进行，$\phi$ 可能变得很平或很陡，影响法向与曲率。常见重初始化方程是
 
 $$
-\frac{\partial\psi}{\partial\tau}
-=\operatorname{sgn}_{\epsilon}(\phi_0)
-\left(1-|\nabla\psi|\right),\qquad
-\psi(\mathbf x,0)=\phi_0(\mathbf x).
+\begin{aligned}
+\frac{\partial\psi}{\partial\tau} &=\operatorname{sgn}_{\epsilon}(\phi_0) \left(1-|\nabla\psi|\right), \\
+\psi(\mathbf x,0)&=\phi_0(\mathbf x).
+\end{aligned}
 $$
 
 $\tau$ 是另一种数值伪时间。目标是恢复距离函数性质，同时尽量保留零水平集。连续理论中的零点保持不代表离散网格上完全不漂移，因此应测量重初始化前后的轮廓差与成像差。[[2]](#ref-2)
@@ -214,8 +223,10 @@ GPU 适合并行卷积、逐点运算与多工艺角计算；水平集的梯度�
 设目标是在 $x=x_t$ 结束的一条亮线，模型当前预测线端在 $x=x_p<x_t$。只看线端位置，定义残差 $e=x_p-x_t<0$。把掩模端部的外向位移记为 $a$，在当前解附近作一阶近似：
 
 $$
-x_p(a+\delta a)\approx x_p(a)+b\,\delta a,
-\qquad b=\frac{\partial x_p}{\partial a}.
+\begin{aligned}
+x_p(a+\delta a)&\approx x_p(a)+b\,\delta a, \\
+b&=\frac{\partial x_p}{\partial a}.
+\end{aligned}
 $$
 
 如果 $b>0$，即把掩模端部向外推能延长晶圆线端，那么 $D=e^2/2$ 的梯度是 $\partial D/\partial a=eb<0$，负梯度更新会增加 $a$。这是一个完整的方向核对：晶圆线端偏短，目标函数要求沿能让线端延长的方向改变掩模。
@@ -223,10 +234,10 @@ $$
 但不要把这个例子推广成固定的修正规则。端部位移也会改变侧边、邻近接触孔和离焦图形。对多个控制点，令 $\mathbf a$ 表示一组局部边界自由度，$\mathbf e$ 表示 EPE，则
 
 $$
-\mathbf e(\mathbf a+\delta\mathbf a)
-\approx\mathbf e+J_e\,\delta\mathbf a,
-\qquad
-\nabla_{\mathbf a}D=J_e^{\mathsf T}W\mathbf e.
+\begin{aligned}
+\mathbf e(\mathbf a+\delta\mathbf a) &\approx\mathbf e+J_e\,\delta\mathbf a, \\
+\nabla_{\mathbf a}D&=J_e^{\mathsf T}W\mathbf e.
+\end{aligned}
 $$
 
 一个边界位置的更新因此汇集多个残差，而不是只听最近控制点的意见。水平集法把这些几何自由度装入隐式场，伴随法把各处误差送回边界；二者共同完成这套耦合计算。

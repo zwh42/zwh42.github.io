@@ -24,8 +24,10 @@ mathjax: true
 光刻分辨率与景深常以 Rayleigh 关系作第一层估计：
 
 $$
-CD=k_1\frac{\lambda}{NA},\qquad
-DOF=k_2\frac{\lambda}{NA^2}.
+\begin{aligned}
+CD&=k_1\frac{\lambda}{NA}, \\
+DOF&=k_2\frac{\lambda}{NA^2}.
+\end{aligned}
 $$
 
 $k_1$、$k_2$ 概括了图形、照明、成像与工艺条件，并非对任何布局都相同的常数。波长和数值孔径确定后，更小 CD 往往要求更激进的分辨率增强，同时降低对焦点、剂量与误差的容忍度。教材以部分相干成像、离轴照明和工艺窗口系统解释了这些联系。[[1]](https://doi.org/10.1002/9780470723876)
@@ -69,8 +71,10 @@ $$
 
 但它只解决了特定节距与方向的问题。把同一源转给另一个节距，一阶位置会变化；转给二维拐角，两个方向的频率要共同参与；转给线端，原有周期近似又不够。最佳源依赖图形，所以全局源必须在图形集合上作折中。
 
-![EUV 常见照明形状](/assets/images/references/illumination-shapes.png)
-*图 1：照明光瞳分布的示例，展示从哪些角度分配能量；并非某一产品层的通用最佳源，也不是 SMO 求解结果的性能比较。来源：[Wikimedia Commons，EUV illumination shapes.png](https://commons.wikimedia.org/wiki/File:EUV_illumination_shapes.png)，Guiding light，2017；[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)，未修改。*
+<figure class="technical-figure" id="fig-1">
+  <div class="figure-image"><a href="/assets/images/references/illumination-shapes.png" target="_blank" rel="noopener" aria-label="EUV 常见照明形状，在新标签页查看大图"><img src="/assets/images/references/illumination-shapes.png" alt="EUV 常见照明形状" width="929" height="661" loading="lazy" decoding="async"></a></div>
+  <figcaption markdown="span">图 1：照明光瞳分布的示例，展示从哪些角度分配能量；并非某一产品层的通用最佳源，也不是 SMO 求解结果的性能比较。来源：[Wikimedia Commons，EUV illumination shapes.png](https://commons.wikimedia.org/wiki/File:EUV_illumination_shapes.png)，Guiding light，2017；[CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)，未修改。</figcaption>
+</figure>
 
 ## Hopkins、SOCS 与源点积分
 
@@ -149,8 +153,10 @@ $$
 固定掩模时，记第 $j$ 个源点的强度图为 $a_j(\mathbf r)$，则
 
 $$
-I=\sum_js_ja_j,\qquad
-\frac{\partial I}{\partial s_j}=a_j.
+\begin{aligned}
+I&=\sum_js_ja_j, \\
+\frac{\partial I}{\partial s_j}&=a_j.
+\end{aligned}
 $$
 
 若 $Z=R(I)$，目标为 $L(Z,T)$，链式法则给出
@@ -237,9 +243,10 @@ PV Band 描述一组工艺条件下轮廓包络的变化，其数值依赖采样
 双层思路把源的响应写进掩模的上层问题。例如
 
 $$
-S^*(M)=\arg\min_{S\in\mathcal S}L_{\mathrm{SO}}(M,S),
-\qquad
-\min_M L_{\mathrm{MO}}(M,S^*(M)).
+\begin{aligned}
+S^*(M)&=\arg\min_{S\in\mathcal S}L_{\mathrm{SO}}(M,S), \\
+&\min_M L_{\mathrm{MO}}(M,S^*(M)).
+\end{aligned}
 $$
 
 其梯度除了掩模直接影响，还包含“掩模变化导致最优源变化”的间接影响：

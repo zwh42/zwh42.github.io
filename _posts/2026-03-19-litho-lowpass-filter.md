@@ -36,8 +36,10 @@ E(x,y)=h(x,y)*m(x,y),
 $$
 
 $$
-\widetilde E(\mathbf f)=P(\mathbf f)\widetilde m(\mathbf f),
-\qquad I(x,y)=|E(x,y)|^2.
+\begin{aligned}
+\widetilde E(\mathbf f)&=P(\mathbf f)\widetilde m(\mathbf f), \\
+I(x,y)&=|E(x,y)|^2.
+\end{aligned}
 $$
 
 $h$ 是振幅点扩散函数，$P$ 是频率坐标下的复瞳函数，二者互为傅里叶变换。理想、无像差、均匀透过的圆形瞳为：
@@ -55,9 +57,10 @@ $$
 
 探测与光化学响应依赖强度。电场卷积取模平方后包含物点及频率之间的交叉项，因此一般不满足 $I=m*\lvert h\rvert^2$；相干系统的线性关系定义在复电场上。
 
-![教材中的 4f 光学系统与傅里叶平面滤波示意](/assets/images/wechat/back-to-basics-fitting-02.png)
-
-*图：4f 系统中的傅里叶平面滤波。来源：Konijnenberg、Adam、Urbach，开放教材 [BSc Optics，第 2 版（2024）](https://doi.org/10.59490/tb.91)，图 6.18，书页 164（[原始 PDF 第 169 页](https://books.open.tudelft.nl/home/catalog/download/174/319/559?inline=1#page=169)），采用 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) 许可。本图从教材页面裁切，未改图内内容；用于说明频谱平面选择机制，不是扫描式光刻机结构图。*
+<figure class="technical-figure" id="fig-1">
+  <div class="figure-image"><a href="/assets/images/wechat/back-to-basics-fitting-02.png" target="_blank" rel="noopener" aria-label="教材中的 4f 光学系统与傅里叶平面滤波示意，在新标签页查看大图"><img src="/assets/images/wechat/back-to-basics-fitting-02.png" alt="教材中的 4f 光学系统与傅里叶平面滤波示意" width="1080" height="635" loading="lazy" decoding="async"></a></div>
+  <figcaption markdown="span">图：4f 系统中的傅里叶平面滤波。来源：Konijnenberg、Adam、Urbach，开放教材 [BSc Optics，第 2 版（2024）](https://doi.org/10.59490/tb.91)，图 6.18，书页 164（[原始 PDF 第 169 页](https://books.open.tudelft.nl/home/catalog/download/174/319/559?inline=1#page=169)），采用 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) 许可。本图从教材页面裁切，未改图内内容；用于说明频谱平面选择机制，不是扫描式光刻机结构图。</figcaption>
+</figure>
 
 ## 三衍射级线栅的解析像
 
@@ -92,8 +95,10 @@ $$
 若不同物点在时间平均意义下互不相干，交叉项平均为零，才得到另一种线性系统：
 
 $$
-I_i=I_o*PSF_I,
-\qquad PSF_I=|h|^2.
+\begin{aligned}
+I_i&=I_o*PSF_I, \\
+PSF_I&=|h|^2.
+\end{aligned}
 $$
 
 其光学传递函数 OTF 是强度点扩散函数的傅里叶变换，也等价于归一化后的复瞳自相关：
@@ -109,8 +114,10 @@ $$
 对于无像差、无中心遮挡的圆瞳，令 $\nu=\lvert\mathbf f\rvert/(2f_c)$，有
 
 $$
-H_I(\nu)=\frac2\pi\left[\arccos\nu-\nu\sqrt{1-\nu^2}\right],
-\qquad0\leq\nu\leq1.
+\begin{aligned}
+H_I(\nu)&=\frac2\pi\left[\arccos\nu-\nu\sqrt{1-\nu^2}\right], \\
+&0\leq\nu\leq1.
+\end{aligned}
 $$
 
 超出该范围为零。它在截止之前就持续降低：例如 $\nu=0.5$ 时约为 $0.391$，不是一块截止前完全无损的矩形窗口。所谓低通既包含“支撑之外没有传递”，也包含“支撑之内的调制度衰减”。相干场截止与非相干强度截止对应不同输入量，不能仅凭两者相差一倍，就宣称一种照明对所有对象拥有两倍分辨率。
