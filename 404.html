@@ -1,21 +1,10 @@
 ---
-layout: home-page
+layout: menu-page
 permalink: /404.html
-title: Sorry 
+title: 这一页，暂时失联
+eyebrow: "TERMINUS LOG / SIGNAL LOST"
+description: "可能是地址变了，也可能是还没写到这里。"
 ---
-{% include calculate_relative_base.html %}
-{% include escape-404.html %}
-<a href="{{ relativebase }}">
-    <picture>
-      <source srcset="{{ relativebase }}assets/img/404_small.jpg" media="(max-width: 768px)">
-      <source srcset="{{ relativebase }}assets/img/404.jpg">
-      <img src="{{ relativebase }}assets/img/404.jpg" alt="Page not found" class="pnf-image" style="width:100vw;max-width:unset;margin-left:calc((100% - 100vw)/2);margin-top:-16.5px;">
-    </picture>
-</a>
-{% include recent-post.html %}
-<form class="search-form inline">
-    <div id="search-container">
-        <input type="text" id="search-input" class="search" placeholder="Search">
-    </div>
-</form>
-<ul id="results-container" class="results-search"></ul>
+<p class="error-code" aria-hidden="true">404_</p>
+<p>先回到熟悉的地方，继续探索。</p>
+<p><a href="{{ '/' | relative_url }}">回到首页</a> &nbsp; / &nbsp; <a href="{{ '/archive/' | relative_url }}">查看文章</a></p>

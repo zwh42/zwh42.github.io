@@ -1,14 +1,15 @@
 ---
-title: Tag Archive
+title: 按标签翻阅
+eyebrow: "TERMINUS LOG / TOPICS"
 layout: menu-page
 permalink: /tag/
 ---
 
-<p id="tag-summary">Showing all tags.</p>
+<p id="tag-summary">所有标签下的文章。</p>
 
 {% assign sorted_tags = site.tags | sort %}
 {% for tag in sorted_tags %}
-  <section class="tag-group" data-tag="{{ tag[0] | downcase }}">
+  <section class="tag-group" data-tag="{{ tag[0] | downcase | escape }}">
     <h2 id="{{ tag[0] | slugify }}">{{ tag[0] }} ({{ tag[1].size }})</h2>
     {% for post in tag[1] %}
       <article class="post-item">
@@ -41,9 +42,9 @@ permalink: /tag/
 
     var summary = document.getElementById("tag-summary");
     if (matches > 0) {
-      summary.textContent = "Showing posts tagged: " + selectedTag;
+      summary.textContent = "当前标签：" + selectedTag;
     } else {
-      summary.textContent = "No posts found for tag: " + selectedTag;
+      summary.textContent = "还没有这个标签的文章：" + selectedTag;
     }
   })();
 </script>

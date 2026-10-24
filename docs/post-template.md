@@ -1,34 +1,35 @@
-# Post Template
+# 写一篇手记
 
-Copy the block below into `_posts/YYYY-MM-DD-your-title.md`.
+复制下面的内容到 `_posts/YYYY-MM-DD-your-title.md`。日期使用实际发布日期。
 
 ```markdown
 ---
 layout: post
-title: "Your Post Title"
-date: 2026-03-15
-author: wenhao
-description: "One-sentence summary for search and social preview."
-tags: [tag1, tag2, tag3]
-img: posts/welcome.svg
-read_time: true
-show_date: true
+title: "手记标题"
+date: 2026-10-25
+author: 端点星日志
+description: "用一句话说清楚这篇手记写什么。"
+tags: [随笔]
 toc: true
 ---
 
-# Your Post Title
+直接写引言，页面会自动显示文章标题。
 
-Write your introduction here.
+## 问题从哪里来
 
-## Section 1
+正文。
 
-Main content.
+## 做了什么
 
-## Section 2
+正文。
 
-Main content.
+## 参考资料
 
-## References
-
-- Optional links and citations
+- 相关链接与出处。
 ```
+
+- `img` 可选，路径相对 `assets/img/`。没有封面图也能正常显示。
+- `toc: true` 显示可展开的文章目录。
+- `mathjax: true` 启用公式，支持 `$...$` 和 `$$...$$`。
+- `mermaid: true` 启用 Mermaid 图表。
+- 标题、摘要、标签和正文都会参与搜索。

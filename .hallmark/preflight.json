@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-25",
+  "mode": "redesign",
+  "depth": "full",
+  "stack": "Jekyll 3.10, Liquid, vanilla CSS and JS",
+  "preserve": [
+    "Existing article content and post URLs",
+    "Navigation destinations, search hooks and data source",
+    "RSS, tags, archives and pagination",
+    "Explicit saved light/dark preference"
+  ],
+  "introduce": [
+    "Topic-neutral dark publication inspired by the user reference",
+    "Bold local sans-serif typography and a real article index",
+    "No author biography or decorative artwork"
+  ],
+  "evidence": {
+    "index.html:4": "Existing personal identity and two articles",
+    "_pages/about.md:11": "User-authored biographical material",
+    "_pages/portfolio.md:11": "KLayout-PyMacros real project",
+    "assets/css/journal.css:1": "Previous design from this chat; not a locked brand system"
+  },
+  "material": {
+    "real": [
+      "Wenhao / zwh42",
+      "Two existing articles with original dates",
+      "KLayout-PyMacros",
+      "Original about-me biography"
+    ],
+    "pictures": [],
+    "absent": [
+      "Testimonials",
+      "Client logos",
+      "Invented metrics",
+      "New photography"
+    ]
+  },
+  "worktree": "Prior uncommitted work is the preceding authorized iteration; copied to /private/tmp/terminus-hallmark-source-before and captured in before screenshots. No user edits stashed or discarded.",
+  "inference": "Technical peers; reading articles and visiting source; restrained technical publication.",
+  "user_direction": "Reference thedankoe.com visual style without copying; no self-introduction; future topics include non-technical writing.",
+  "reference": {
+    "url": "https://thedankoe.com/",
+    "observed": "Dark monochrome, heavy geometric sans, concentrated centered opening, generous article grid spacing",
+    "not_copied": [
+      "sales claims",
+      "numbers",
+      "brand copy",
+      "photos",
+      "biography",
+      "resource products"
+    ]
+  }
+}

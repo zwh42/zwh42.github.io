@@ -1,12 +1,11 @@
 ---
 layout: default
 ---
-<div class="flex-container transparent">
+<div class="site-shell">
   {% include header.html %}
-  <div class="content wrapper">
-    {{ content }}
-  {% include search.html %}
-  {% include pagination.html %}
-  </div> <!-- End Wrapper -->
+  <main id="main-content" class="interior-content" tabindex="-1">
+    <header class="page-heading"><h1>{{ page.title | escape }}</h1>{% if page.description %}<p class="page-intro">{{ page.description }}</p>{% endif %}</header>
+    <div class="prose">{{ content }}</div>
+  </main>
   {% include footer.html %}
 </div>

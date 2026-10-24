@@ -1,64 +1,19 @@
 ---
-title: "Portfolio"
+title: 工具
 layout: menu-page
 permalink: /portfolio/
+description: "KLayout 的 Python 宏与版图处理代码。"
 ---
 
-## My Projects
+## KLayout-PyMacros
 
-### KLayout-PyMacros
-![KLayout Logo](/assets/images/klayout-logo.png)
+围绕 KLayout 的 Python 宏，处理半导体版图工作中的重复操作。
 
-**Description:** A Python library for KLayout (https://www.klayout.de/), providing tools for layout manipulation and automation. This project includes various utilities for semiconductor layout design and processing.
+<dl class="project-spec">
+  <div><dt>图像转换</dt><dd>图像转 OASIS 文件</dd></div>
+  <div><dt>版图操作</dt><dd>版图处理与自动化</dd></div>
+  <div><dt>代码复用</dt><dd>常用 KLayout 操作的代码片段</dd></div>
+  <div><dt>使用技术</dt><dd>Python、KLayout、GDS / OASIS</dd></div>
+</dl>
 
-**Technologies Used:**
-- Python
-- KLayout
-- GDS/OASIS format
-- Semiconductor EDA
-
-**Key Features:**
-- Image to OASIS file conversion
-- Layout manipulation tools
-- Code snippets for common KLayout operations
-- Open source under MIT license
-
-[View Project](https://github.com/zwh42/KLayout-PyMacros) | [24 Stars](https://github.com/zwh42/KLayout-PyMacros/stargazers) | [6 Forks](https://github.com/zwh42/KLayout-PyMacros/network/members)
-
----
-
-### Project 2: [Project Name]
-![Project 2 Image](/assets/images/project2.jpg)
-
-**Description:** [Brief description of the project]
-
-**Technologies Used:**
-- Technology 1
-- Technology 2
-- Technology 3
-
-**Key Features:**
-- Feature 1
-- Feature 2
-- Feature 3
-
-[View Project](https://github.com/yourusername/project2) | [Live Demo](https://project2-demo.com)
-
----
-
-### Project 3: [Project Name]
-![Project 3 Image](/assets/images/project3.jpg)
-
-**Description:** [Brief description of the project]
-
-**Technologies Used:**
-- Technology 1
-- Technology 2
-- Technology 3
-
-**Key Features:**
-- Feature 1
-- Feature 2
-- Feature 3
-
-[View Project](https://github.com/yourusername/project3) | [Live Demo](https://project3-demo.com) 
+[在 GitHub 查看源码](https://github.com/zwh42/KLayout-PyMacros)

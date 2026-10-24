@@ -2,14 +2,14 @@
 layout: post
 read_time: true
 show_date: true
-title: "[vibe writing]从segment到pixel: OPC的进化"
+title: "从segment到pixel: OPC的进化"
 date: 2025-12-15
 tags: [lithography, ILT, OPC, semiconductor, computational-photography]
-author: wenhao
+author: 端点星日志
 description: "反向光刻技术三十年演进：从基于段落的几何操作到基于像素的优化方法"
 ---
 
-# [vibe writing]从segment到pixel: OPC的进化
+# 从segment到pixel: OPC的进化
 
 光刻技术作为半导体制造的核心工艺，其分辨率增强技术（RET）在过去三十年中经历了革命性的演进。特别是反向光刻技术（Inverse Lithography Technology, ILT）的发展，标志着从传统的基于段落（segment）的光学邻近校正（OPC）向现代基于像素（pixel）的优化方法的根本性转变。
 

@@ -1,0 +1,70 @@
+[
+  {
+    "date": "2026-10-25",
+    "mode": "redesign",
+    "depth": "full",
+    "scope": "site",
+    "shape": "Index-First",
+    "theme": "Studio adapted to explicit Dan Koe visual reference",
+    "axes": "dark/geometric-sans/neutral",
+    "hero": "Banner",
+    "nav": "masthead",
+    "footer": "colophon",
+    "imagery": "none; actual article titles carry the index",
+    "photos": [],
+    "entry": "centered journal title and direct reading action",
+    "fingerprint": {
+      "heading": "heavy sans",
+      "body": "two-column real article index",
+      "dividers": "quiet rules at article metadata and tools",
+      "button": "one monochrome reading action",
+      "image": "none",
+      "reveal": "none"
+    },
+    "sections": [
+      "topic-neutral opening",
+      "articles",
+      "real tool",
+      "colophon"
+    ],
+    "signature": "a writing site without an author pitch",
+    "waived": [
+      "49b",
+      "79"
+    ],
+    "prompt": "Use Hallmark; reference thedankoe.com visual style without copying, no self-introduction, support future non-technical articles",
+    "verification": {
+      "floor": 0,
+      "open_reflex": 0,
+      "warnings": 0,
+      "waivers": 2,
+      "links": "20/20",
+      "fields": "1/1",
+      "finish_review": "subagent ship"
+    },
+    "typography_update": {
+      "date": "2026-10-25",
+      "verse": "泥上偶然留指爪，鸿飞那复计东西。",
+      "interface": "Geist / Noto Sans SC",
+      "reading": "Source Serif 4 / Noto Serif SC",
+      "code": "Geist Mono",
+      "reading_px": 18,
+      "leading": 1.9,
+      "self_hosted": true,
+      "full_unicode_fallback": true,
+      "font_bytes_cold": {
+        "home": 224088,
+        "opc_article": 331172,
+        "welcome_article": 217240
+      },
+      "font_errors": 0,
+      "external_font_requests": 0,
+      "mobile_overflow": false,
+      "rendered_sizes": [
+        "1440x900",
+        "390x844"
+      ],
+      "research": ".hallmark/typography-research.md"
+    }
+  }
+]
