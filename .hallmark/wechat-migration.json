@@ -1,7 +1,7 @@
 {
   "account": "端点星日志",
   "updated": "2026-10-25",
-  "scope": "全部 14 篇已发表文章已通过登录后的微信公众平台后台抓取并迁移为 Jekyll 文章。",
+  "scope": "全部 13 篇已发表文章已通过登录后的微信公众平台后台抓取并迁移为 Jekyll 文章。",
   "method": "浏览器登录 mp.weixin.qq.com 后在页面内 fetch 原始 HTML；公式从 MathJax SVG 的 MathML 节点树逆向还原为 LaTeX；图片从 mmbiz CDN 下载到 assets/images/wechat/。",
   "articles": [
     {
@@ -43,20 +43,6 @@
       "tables": 1,
       "blockquotes": 0,
       "h2": 0,
-      "h3": 0,
-      "code": 0
-    },
-    {
-      "slug": "culitho",
-      "title": "cuLitho，芯片开始帮忙造芯片",
-      "ct": 1789484229,
-      "oriCreateTime": 1789484229,
-      "chars": 5358,
-      "images": 4,
-      "mjx": 0,
-      "tables": 0,
-      "blockquotes": 0,
-      "h2": 5,
       "h3": 0,
       "code": 0
     },
