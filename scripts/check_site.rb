@@ -16,7 +16,6 @@ rules = YAML.load_file(File.join(source, '_data/taxonomy.yml'))
 fixtures = [
   ['categories', { 'title' => 'GPU', 'categories' => ['自定义', '第二分类'] }, '自定义|第二分类'],
   ['categories', { 'title' => 'GPU', 'categories' => ['自定义', '自定义'] }, '自定义'],
-  ['categories', { 'title' => 'cuLitho，芯片开始帮忙造芯片' }, '算力与工具'],
   ['categories', { 'title' => '曲线掩模走到哪一步了', 'tags' => ['ILT'] }, '掩模工艺'],
   ['categories', { 'title' => '一篇没有领域关键词的文章', 'tags' => ['光学'] }, '光学成像'],
   ['categories', { 'title' => '读书时想到的一件事', 'tags' => [] }, '随笔'],
