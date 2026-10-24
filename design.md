@@ -1,48 +1,30 @@
 # Design: 端点星日志
 
-Shared system for the Jekyll site. Hallmark checks apply; the user's reference overrides Studio's ornamental material.
+The October 2026 redesign follows https://s1.work/categories/: a restrained terminal journal with warm charcoal, orange accents, monospace typography and a narrow reading column. Site identity and article URLs remain unchanged.
 
-## User direction
+## Shared system
 
-Reference https://thedankoe.com/ for visual tone, without copying its layout, brand or copy. No self-introduction. Future writing includes non-technical topics.
+- All public pages share the same header, navigation, theme controls, reading progress and footer.
+- Content column is capped at 700px including gutters. Mobile gutters reduce to 20px, and 16px on the smallest screens.
+- Locally served Geist Mono handles Latin; Noto Sans SC handles Chinese. Body text is 16px with generous leading; article text is 15px on narrow screens. No external font requests.
+- Warm charcoal is the default. The light theme uses warm paper. Both themes share orange accents and visible keyboard focus.
+- Borders and section dividers are quiet and dashed. Category cards include counts and a proportional accent line; tags are compact pills sorted by article count.
+- No self-introduction or fixed topic promise. The footer retains the original verse.
 
-## System
+## Page structure
 
-- Editorial article index with a centered, topic-neutral opening.
-- Dark graphite and near-white ink. A light mode remains available through the existing control.
-- Large bold sans-serif typography; visible hierarchy from scale and weight, not accent words or labels.
-- The homepage shows articles and the real KLayout project. No portrait, personal biography, customer counts, decorative drawing, placeholder photography or sales sections.
-- No repeated English eyebrows, ordinal section markers, decorative dots or appended link arrows.
+- Home: latest article, then a numbered single-column article list and pagination.
+- Archive: category cards, tags and a year-grouped timeline. `/categories/`, `/archive/` and `/blog/` share this view.
+- Category/tag results: matching articles in reverse chronological order with counts and a return link; unknown terms have an empty state.
+- Articles: title, date, categories, tags, optional table of contents, original body and adjacent articles. Figures, formulas and code remain supported.
+- Tools/about/404: use the same page structure and tokens.
 
-## Tokens
+## Content and behavior
 
-`assets/css/tokens.css` is the source of truth for all colors, spacing and font roles.
+Classification uses the metadata and ordered rules in `_data/taxonomy.yml`. Explicit categories and tags win; missing categories use title/tag keywords, with a 随笔 fallback; missing tags use title/description keywords. All indexes, counts and search metadata use the same Liquid helpers. No unsupported custom Jekyll plugins are required.
 
-- Titles and interface: Geist for Latin, Noto Sans SC for Chinese, with system sans fallbacks.
-- Articles and the homepage verse: Noto Serif SC (the Google-branded Source Han Serif family). Source Serif 4 handles Latin text and proportional punctuation, with automatic optical sizing in articles. This avoids CJK-width apostrophes in English prose. System Songti/SimSun are offline fallbacks.
-- Code only: Geist Mono; ligatures are disabled so operator characters stay explicit.
-- Font weights: 400–700 variable files; interface uses 400/500/700, prose uses 400/700.
-- Interface 16px; metadata 14px; article prose 18px with 1.9 leading on both desktop and mobile. Headings and tables retain the sans family.
-- All font files are local WOFF2, with OFL licenses and source checksums beside them. Small priority subsets cover the shared interface, current Chinese prose and verse. Full published Unicode subsets remain available behind these, selected lazily by the browser; future posts do not require a font rebuild. Latin body text stays a separate subset so English pages avoid Chinese reading downloads.
-- Fonts use `font-display: swap`; text remains available while fonts load or if a font fails. No third-party font requests at runtime.
-- Chosen homepage verse: 泥上偶然留指爪，鸿飞那复计东西。 Each half stays together when the narrow viewport requires a line break.
-- Capped container: 1184px including desktop gutters. Reading pages: 760px.
+Search includes categories and retains Cmd/Ctrl+K, Escape and focus restoration. Theme choice persists locally. Main content, archive and all filter groups remain readable without JavaScript. Images, tables and code fit narrow screens. Native links, buttons, labels and dialogs retain keyboard access; reduced-motion preferences disable transitions.
 
-## Controls
+## Validation
 
-- One primary reading action, 48px tall; ordinary article links remain typographic.
-- Search and appearance controls have 44px targets and instant visible focus.
-- Preserve search input/dialog and theme-button IDs, article URLs, RSS, tags and pagination.
-- Default dark appearance; an explicitly saved light/dark preference wins.
-
-## Variants
-
-Article pages are long documents, not landing pages. Their original Markdown and headings remain. Short project pages do not gain invented examples or decorative content to meet a marketing-section count.
-
-## Motion
-
-Still. Content is visible without scripting. No entrance animations or automated cycling.
-
-## Exports
-
-`assets/css/tokens.css`, `assets/css/base.css`, `assets/css/fonts.css`, `assets/css/journal.css`.
+`JEKYLL_ENV=production bundle exec jekyll build` followed by `bundle exec ruby scripts/check_site.rb _site`. Browser checks cover 320px, 768px and 1280px layouts, filtering, search, theme persistence and empty states. The source of truth is `assets/css/tokens.css`, `assets/css/journal.css`, `_data/navigation.yml` and `_data/taxonomy.yml`.

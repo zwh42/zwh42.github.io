@@ -1,4 +1,6 @@
 <footer class="site-footer">
-  <p>© {{ site.time | date: '%Y' }} 端点星日志</p>
-  <nav aria-label="页脚导航"><a href="https://github.com/{{ site.github }}">GitHub</a><a href="{{ '/feed.xml' | relative_url }}">RSS</a><a href="{{ '/tags/' | relative_url }}">标签索引</a><a href="{{ '/about/' | relative_url }}">关于本站</a></nav>
+  <p class="footer-wordmark"><span class="terminal-path" aria-hidden="true">~/</span>{{ site.title | escape }}</p>
+  <p class="copyright">© {{ site.time | date: '%Y' }} {{ site.title | escape }}</p>
+  <nav aria-label="页脚导航"><a href="{{ '/about/' | relative_url }}">[关于]</a><a href="{{ '/categories/' | relative_url }}">[归档]</a><a href="{{ '/feed.xml' | relative_url }}">[RSS]</a><a href="https://github.com/{{ site.github }}">[GitHub]</a></nav>
+  <p class="footer-note">泥上偶然留指爪，鸿飞那复计东西。</p>
 </footer>

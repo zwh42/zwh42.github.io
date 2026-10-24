@@ -1,0 +1,31 @@
+{%- capture category_values -%}{%- include taxonomy-terms.html kind='categories' -%}{%- endcapture -%}
+{%- assign category_occurrences = category_values | split: '|' -%}
+{%- assign category_terms = category_occurrences | uniq | sort -%}
+{%- capture tag_values -%}{%- include taxonomy-terms.html kind='tags' -%}{%- endcapture -%}
+{%- assign tag_occurrences = tag_values | split: '|' -%}
+{%- assign tag_terms = tag_occurrences | uniq | sort -%}
+{% unless include.tags_only %}
+<section class="taxonomy-section" aria-labelledby="categories-title">
+  <h2 class="section-heading" id="categories-title"><span class="section-prefix" aria-hidden="true">//</span> 分类 <span class="section-rule" aria-hidden="true"></span></h2>
+  <div class="category-grid">
+  {% for category in category_terms %}
+    {% assign category_matches = category_occurrences | where_exp: 'value', 'value == category' %}
+    {% assign category_count = category_matches | size %}
+    <a class="category-card" href="{{ '/category/' | relative_url }}?category={{ category | url_encode }}"><span>{{ category | escape }}</span><span class="category-count">{{ category_count }}</span><span class="category-meter" style="width: {{ category_count | times: 100.0 | divided_by: site.posts.size }}%" aria-hidden="true"></span></a>
+  {% endfor %}
+  </div>
+</section>
+{% endunless %}
+<section class="taxonomy-section" aria-labelledby="tags-title">
+  <h2 class="section-heading" id="tags-title"><span class="section-prefix" aria-hidden="true">#</span> 标签 <span class="section-rule" aria-hidden="true"></span></h2>
+  <ul class="tag-cloud">
+  {% assign tag_count_range = (1..site.posts.size) | reverse %}
+  {% for count in tag_count_range %}
+    {% for tag in tag_terms %}
+      {% assign tag_matches = tag_occurrences | where_exp: 'value', 'value == tag' %}
+      {% assign tag_count = tag_matches | size %}
+      {% if tag_count == count %}<li><a href="{{ '/tag/' | relative_url }}?tag={{ tag | url_encode }}"><span class="tag-hash" aria-hidden="true">#</span>{{ tag | escape }} <span class="tag-count">{{ tag_count }}</span></a></li>{% endif %}
+    {% endfor %}
+  {% endfor %}
+  </ul>
+</section>

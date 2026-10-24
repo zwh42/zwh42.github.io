@@ -1,0 +1,4 @@
+{%- for taxonomy_post in site.posts -%}
+  {%- capture taxonomy_term_values -%}{%- include taxonomy-value.html post=taxonomy_post kind=include.kind -%}{%- endcapture -%}
+  {%- unless taxonomy_term_values == '' -%}{{- taxonomy_term_values -}}|{%- endunless -%}
+{%- endfor -%}

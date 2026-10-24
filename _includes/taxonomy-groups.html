@@ -1,0 +1,21 @@
+{% capture taxonomy_values %}{% include taxonomy-terms.html kind=include.kind %}{% endcapture %}
+{% assign taxonomy_terms = taxonomy_values | split: '|' | uniq | sort %}
+<p class="taxonomy-summary" id="taxonomy-summary" role="status">按{{ include.label }}浏览文章。</p>
+<div class="taxonomy-groups" data-taxonomy-param="{{ include.param }}" data-taxonomy-label="{{ include.label }}">
+{% for term in taxonomy_terms %}
+<section class="taxonomy-group" data-term="{{ term | escape }}">
+  <h2 class="section-heading"><span class="section-prefix" aria-hidden="true">{% if include.kind == 'tags' %}#{% else %}//{% endif %}</span>{{ term | escape }}<span class="section-rule" aria-hidden="true"></span></h2>
+  <ul class="filtered-posts">
+  {% for post in site.posts %}
+    {% capture values %}{% include taxonomy-value.html post=post kind=include.kind %}{% endcapture %}
+    {% assign post_terms = values | split: '|' %}
+    {% if post_terms contains term %}
+    <li class="entry"><time class="entry-date" datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: '%Y-%m-%d' }}</time><h3><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h3>{% if post.description %}<p>{{ post.description | escape }}</p>{% endif %}</li>
+    {% endif %}
+  {% endfor %}
+  </ul>
+</section>
+{% endfor %}
+</div>
+<p class="empty-state" id="taxonomy-empty" hidden>暂时没有这个{{ include.label }}的文章。<a href="{{ '/categories/' | relative_url }}">浏览全部分类与标签</a></p>
+<a class="back-link taxonomy-back" href="{{ '/categories/' | relative_url }}">← 全部分类与标签</a>

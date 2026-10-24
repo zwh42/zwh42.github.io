@@ -18,6 +18,50 @@
   });
   syncTheme();
 
+  var progress = document.getElementById('reading-progress');
+  if (progress) {
+    var progressScheduled = false;
+    function updateProgress() {
+      var distance = root.scrollHeight - root.clientHeight;
+      var percentage = distance > 0 ? Math.min(100, Math.max(0, window.scrollY / distance * 100)) : 100;
+      progress.style.width = percentage + '%';
+      progressScheduled = false;
+    }
+    function scheduleProgress() {
+      if (!progressScheduled) { progressScheduled = true; window.requestAnimationFrame(updateProgress); }
+    }
+    window.addEventListener('scroll', scheduleProgress, { passive: true });
+    window.addEventListener('resize', scheduleProgress);
+    window.addEventListener('load', scheduleProgress);
+    updateProgress();
+  }
+
+  var taxonomy = document.querySelector('[data-taxonomy-param]');
+  if (taxonomy) {
+    var selected = (new URLSearchParams(location.search).get(taxonomy.dataset.taxonomyParam) || '').trim();
+    if (selected) {
+      var selectedKey = selected.toLocaleLowerCase();
+      var selectedCount = 0;
+      var selectedName = selected;
+      taxonomy.querySelectorAll('.taxonomy-group').forEach(function (group) {
+        var matches = group.dataset.term.toLocaleLowerCase() === selectedKey;
+        group.hidden = !matches;
+        if (matches) { selectedName = group.dataset.term; selectedCount += group.querySelectorAll('.filtered-posts > li').length; }
+      });
+      var title = document.getElementById('page-title');
+      if (title) {
+        var cursor = document.createElement('span');
+        cursor.className = 'title-cursor';
+        cursor.setAttribute('aria-hidden', 'true');
+        cursor.textContent = '_';
+        title.replaceChildren(document.createTextNode(selectedName), cursor);
+      }
+      document.title = selectedName + ' · ' + document.title.split(' · ').slice(1).join(' · ');
+      document.getElementById('taxonomy-summary').textContent = selectedCount + ' 篇文章 · ' + taxonomy.dataset.taxonomyLabel;
+      document.getElementById('taxonomy-empty').hidden = selectedCount > 0;
+    }
+  }
+
   var dialog = document.getElementById('search-dialog');
   if (!dialog) return;
   var input = document.getElementById('search-input');
@@ -41,14 +85,14 @@
   async function search() {
     var query = input.value.trim().toLocaleLowerCase();
     results.replaceChildren();
-    if (!query) { status.textContent = '输入关键词，搜索标题、标签和正文。'; return; }
+    if (!query) { status.textContent = '输入关键词，搜索标题、分类、标签和正文。'; return; }
     status.textContent = '正在查找…';
     try {
       var posts = await loadIndex();
       if (query !== input.value.trim().toLocaleLowerCase()) return;
       var terms = query.split(/\s+/);
       var matches = posts.filter(function (post) {
-        var text = [post.title, (post.tags || []).join(' '), post.description, post.content].join(' ').toLocaleLowerCase();
+        var text = [post.title, (post.categories || []).join(' '), (post.tags || []).join(' '), post.description, post.content].join(' ').toLocaleLowerCase();
         return terms.every(function (term) { return text.includes(term); });
       });
       status.textContent = matches.length ? '找到 ' + matches.length + ' 篇文章' : '暂时没有找到。试试其他关键词？';

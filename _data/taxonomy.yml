@@ -1,0 +1,51 @@
+# Specific title matches win before broader tag matches; explicit metadata wins.
+default_category: 随笔
+categories:
+  - name: 算力与工具
+    title_terms: [culitho, gpu, klayout, python, 工具]
+    tag_terms: [culitho, gpu, klayout, python]
+  - name: 掩模工艺
+    title_terms: [曲线掩模, 曲线mask, curvilinear]
+    tag_terms: [曲线掩模, 掩模工艺]
+  - name: 建模与校准
+    title_terms: [模型, 拟合, 建模, 校准, 晶圆]
+    tag_terms: [建模, 拟合, 校准]
+  - name: 光学成像
+    title_terms: [aerial image, partial coherence, 低通滤波, tcc, socs, 光学成像]
+    tag_terms: [光学, 光学成像, aerial image, 部分相干]
+  - name: 计算光刻
+    title_terms: [计算光刻, ilt, opc, smo, 光源]
+    tag_terms: [计算光刻, ilt, opc, smo, lithography, 光刻]
+tag_rules:
+  - name: ILT
+    terms: [ilt, 反向光刻]
+  - name: OPC
+    terms: [opc, 光学邻近修正]
+  - name: SMO
+    terms: [smo, 光源掩模协同优化]
+  - name: 计算光刻
+    terms: [计算光刻, computational lithography]
+  - name: 光学
+    terms: [光学, 傅里叶, fourier]
+  - name: Aerial Image
+    terms: [aerial image, 空中像]
+  - name: 部分相干
+    terms: [部分相干, partial coherence]
+  - name: TCC
+    terms: [tcc]
+  - name: SOCS
+    terms: [socs]
+  - name: Level Set
+    terms: [level set, 水平集]
+  - name: 曲线掩模
+    terms: [曲线掩模, curvilinear]
+  - name: 建模
+    terms: [建模, 模型校准]
+  - name: GPU
+    terms: [gpu, culitho]
+  - name: KLayout
+    terms: [klayout]
+  - name: Python
+    terms: [python]
+  - name: Swift
+    terms: [swift, swiftui]

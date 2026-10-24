@@ -1,0 +1,40 @@
+{%- if include.kind == 'categories' -%}
+  {%- if include.post.categories.size > 0 -%}
+    {{- include.post.categories | uniq | join: '|' -}}
+  {%- else -%}
+    {%- assign taxonomy_title = include.post.title | downcase -%}
+    {%- assign taxonomy_category = '' -%}
+    {%- for rule in site.data.taxonomy.categories -%}
+      {%- for term in rule.title_terms -%}
+        {%- if taxonomy_title contains term -%}{%- assign taxonomy_category = rule.name -%}{%- break -%}{%- endif -%}
+      {%- endfor -%}
+      {%- if taxonomy_category != '' -%}{%- break -%}{%- endif -%}
+    {%- endfor -%}
+    {%- if taxonomy_category == '' -%}
+      {%- assign taxonomy_post_tags = include.post.tags | join: '|' | downcase | split: '|' -%}
+      {%- for rule in site.data.taxonomy.categories -%}
+        {%- for term in rule.tag_terms -%}
+          {%- if taxonomy_post_tags contains term -%}{%- assign taxonomy_category = rule.name -%}{%- break -%}{%- endif -%}
+        {%- endfor -%}
+        {%- if taxonomy_category != '' -%}{%- break -%}{%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+    {{- taxonomy_category | default: site.data.taxonomy.default_category -}}
+  {%- endif -%}
+{%- else -%}
+  {%- if include.post.tags.size > 0 -%}
+    {{- include.post.tags | uniq | join: '|' -}}
+  {%- else -%}
+    {%- assign taxonomy_text = include.post.title | append: ' ' | append: include.post.description | downcase -%}
+    {%- assign taxonomy_inferred_tags = '' -%}
+    {%- for rule in site.data.taxonomy.tag_rules -%}
+      {%- for term in rule.terms -%}
+        {%- if taxonomy_text contains term -%}
+          {%- assign taxonomy_inferred_tags = taxonomy_inferred_tags | append: rule.name | append: '|' -%}
+          {%- break -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endfor -%}
+    {{- taxonomy_inferred_tags | split: '|' | uniq | join: '|' -}}
+  {%- endif -%}
+{%- endif -%}

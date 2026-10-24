@@ -2,28 +2,31 @@
 layout: home-page
 description: "泥上偶然留指爪，鸿飞那复计东西。"
 ---
-<section class="journal-intro hero" aria-labelledby="intro-title">
-  <h1 id="intro-title">端点星日志</h1>
-  <p class="lead journal-verse"><span>泥上偶然留指爪，</span><span>鸿飞那复计东西。</span></p>
-  <a class="reading-link primary-reading" href="#writing">阅读文章</a>
+<h1 class="sr-only">端点星日志</h1>
+{% if paginator.page == 1 %}
+{% assign latest_post = site.posts.first %}
+{% if latest_post %}
+<section class="featured-post" aria-labelledby="featured-title">
+  <span class="featured-label">最新文章</span>
+  {% include post-date-category.html post=latest_post %}
+  <h2 id="featured-title"><a href="{{ latest_post.url | relative_url }}">{{ latest_post.title | escape }}</a></h2>
+  <p>{{ latest_post.description | escape }}</p>
+  <a class="read-article" href="{{ latest_post.url | relative_url }}">阅读全文 <span aria-hidden="true">→</span></a>
 </section>
+{% endif %}
+{% endif %}
 <section class="writing-section" id="writing" aria-labelledby="writing-title">
-  <div class="section-heading"><h2 id="writing-title">最近文章</h2><a href="{{ '/archive/' | relative_url }}">全部文章</a></div>
-  <div class="entry-list">
+  <h2 class="section-heading" id="writing-title"><span class="section-prefix" aria-hidden="true">//</span> {% if paginator.page == 1 %}最近文章{% else %}文章{% endif %}<span class="section-rule" aria-hidden="true"></span><a class="section-link" href="{{ '/categories/' | relative_url }}">全部 {{ site.posts.size }} 篇 →</a></h2>
+  <ol class="entry-list" start="{% if paginator.page == 1 %}1{% else %}{{ paginator.page | minus: 1 | times: site.paginate }}{% endif %}">
     {% for post in paginator.posts %}
-    <article class="entry">
-      <div class="entry-content">
-        <h3><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h3>
-        <p>{{ post.description | escape }}</p>
-        <a class="read-article" href="{{ post.url | relative_url }}">阅读全文</a>
-      </div>
-      <footer class="entry-meta"><time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: '%Y年%m月%d日' }}</time><ul class="entry-tags">{% for tag in post.tags limit:3 %}<li><a href="{{ '/tag/' | relative_url }}?tag={{ tag | url_encode }}">{{ tag }}</a></li>{% endfor %}</ul></footer>
-    </article>
-    {% else %}<p>还没有发布手记。</p>{% endfor %}
-  </div>
-  {% if paginator.total_pages > 1 %}<nav class="pagination" aria-label="文章分页">{% if paginator.previous_page %}<a href="{{ paginator.previous_page_path | relative_url }}">上一页</a>{% endif %}<span>{{ paginator.page }} / {{ paginator.total_pages }}</span>{% if paginator.next_page %}<a href="{{ paginator.next_page_path | relative_url }}">下一页</a>{% endif %}</nav>{% endif %}
-</section>
-<section class="tools-section" aria-labelledby="making-title">
-  <div class="tools-heading"><h2 id="making-title">工具</h2><a href="{{ '/portfolio/' | relative_url }}">项目说明</a></div>
-  <div class="tool-details"><h3><a href="https://github.com/zwh42/KLayout-PyMacros">KLayout-PyMacros</a></h3><p>图像转 OASIS、版图处理，以及可复用的 Python 宏。</p><ul class="tool-stack"><li>Python</li><li>KLayout</li><li>GDS / OASIS</li></ul><a class="reading-link" href="https://github.com/zwh42/KLayout-PyMacros">查看源码</a></div>
+    {% unless paginator.page == 1 and forloop.first %}
+    <li class="entry">
+      {% include post-date-category.html post=post %}
+      <h3><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h3>
+      <p>{{ post.description | escape }}</p>
+    </li>
+    {% endunless %}
+    {% endfor %}
+  </ol>
+  {% if paginator.total_pages > 1 %}<nav class="pagination" aria-label="文章分页">{% if paginator.previous_page %}<a rel="prev" href="{{ paginator.previous_page_path | relative_url }}">← 上一页</a>{% endif %}<span>{{ paginator.page }} / {{ paginator.total_pages }}</span>{% if paginator.next_page %}<a rel="next" href="{{ paginator.next_page_path | relative_url }}">下一页 →</a>{% endif %}</nav>{% endif %}
 </section>

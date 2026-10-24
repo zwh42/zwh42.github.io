@@ -3,10 +3,15 @@ layout: null
 ---
 [
   {% for post in site.posts %}
+    {% capture category_values %}{% include taxonomy-value.html post=post kind='categories' %}{% endcapture %}
+    {% assign categories = category_values | split: '|' %}
+    {% capture tag_values %}{% include taxonomy-value.html post=post kind='tags' %}{% endcapture %}
+    {% assign tags = tag_values | split: '|' %}
     {
       "title"    : {{ post.title | jsonify }},
       "description": {{ post.description | jsonify }},
-      "tags"     : {{ post.tags | jsonify }},
+      "tags"     : {{ tags | jsonify }},
+      "categories": {{ categories | jsonify }},
       "url"      : {{ post.url | relative_url | jsonify }},
       "date"     : {{ post.date | jsonify }},
       "content"  : {{ post.content | strip_html | strip_newlines | jsonify }}

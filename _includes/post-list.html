@@ -1,12 +1,11 @@
-{% for post in site.posts %}
-  {% assign year = post.date | date: '%Y' %}
-  {% if year != previous_year %}
-    {% assign previous_year = year %}
-<h2 class="archive-year">{{ year }} /</h2>
-  {% endif %}
-  <article class="post-item">
-    <time class="post-meta" datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: '%m.%d' }}</time>
-    <h3><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></h3>
-    {% if post.description %}<p>{{ post.description | escape }}</p>{% endif %}
-  </article>
-{% else %}<p>第一篇文章还在酝酿。</p>{% endfor %}
+{% assign archive_years = site.posts | group_by_exp: 'post', "post.date | date: '%Y'" %}
+{% for year in archive_years %}
+<section class="archive-year-group" aria-label="{{ year.name }} 年文章">
+  <h3 class="archive-year">{{ year.name }} <span>{{ year.items.size }} 篇</span></h3>
+  <ol class="timeline-list">
+    {% for post in year.items %}
+    <li><time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: '%m-%d' }}</time><a href="{{ post.url | relative_url }}">{{ post.title | escape }}</a></li>
+    {% endfor %}
+  </ol>
+</section>
+{% else %}<p class="empty-state">第一篇文章还在酝酿。</p>{% endfor %}

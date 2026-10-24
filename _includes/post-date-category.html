@@ -1,0 +1,3 @@
+{%- capture entry_category_values -%}{%- include taxonomy-value.html post=include.post kind='categories' -%}{%- endcapture -%}
+{%- assign entry_categories = entry_category_values | split: '|' -%}
+<div class="entry-meta"><time datetime="{{ include.post.date | date_to_xmlschema }}">{{ include.post.date | date: '%Y-%m-%d' }}</time>{% for category in entry_categories %}<a class="category-label" href="{{ '/category/' | relative_url }}?category={{ category | url_encode }}">{{ category | escape }}</a>{% endfor %}</div>

@@ -16,7 +16,7 @@ To run this website locally:
 Use [`docs/post-template.md`](docs/post-template.md) when creating new posts.
 
 1. Copy the template into `_posts/YYYY-MM-DD-your-title.md`
-2. Fill `title`, `description` and `tags`; `img` is optional
+2. Fill `title` and `description`; `categories`, `tags` and `img` are optional
 3. Keep image paths relative to `assets/img/` (example: `posts/welcome.svg`)
 4. Commit and push to `master` to publish via GitHub Pages
 
@@ -26,17 +26,22 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Design
 
-The shared design uses locally hosted Geist / Noto Sans SC for titles and interface, Source Serif 4 / Noto Serif SC for articles and the homepage verse, and Geist Mono for code. Full WOFF2 Unicode subsets support future writing without regenerating fonts. Font sources and licenses live in `assets/fonts/journal/`; the selection research is recorded in `.hallmark/typography-research.md`. Styles live in `assets/css/journal.css`, font roles and scales in `assets/css/tokens.css`, and the design direction in `design.md`. Navigation is configured in `_data/navigation.yml`.
+The shared design follows [Sone Blog](https://s1.work/categories/): a warm dark background, orange accents, narrow reading column, terminal-style navigation and monospace typography. Geist Mono and Noto Sans SC are served locally. Font sources and licenses live in `assets/fonts/journal/`. Styles live in `assets/css/journal.css`, colors and typography in `assets/css/tokens.css`, and navigation in `_data/navigation.yml`.
 
 - Dark appearance is the default; the header toggle saves a light/dark preference.
-- Search supports titles, tags and article text, with `Cmd/Ctrl + K` and `Esc` shortcuts.
+- Search supports titles, categories, tags and article text, with `Cmd/Ctrl + K` and `Esc` shortcuts.
 - Post covers are optional. Set `toc: true` for a table of contents and `mathjax: true` for formulas.
 - The existing Jekyll pagination, RSS feed, tag routes and post URLs are retained.
 
-Build check: `bundle exec jekyll build`.
+Build and regression checks:
 
-## Hallmark
+```sh
+JEKYLL_ENV=production bundle exec jekyll build
+bundle exec ruby scripts/check_site.rb _site
+```
 
-The October 2026 revision uses [Hallmark](https://github.com/Nutlope/hallmark) v2.0.0. The user's visual reference is [Dan Koe](https://thedankoe.com/), limited to monochrome typography and spacing. The site has no personal introduction and its article index is topic-neutral.
+## Categories and tags
 
-Hallmark provenance and the design decisions live in `.hallmark/`. Generated screenshots and comparisons are ignored by Git. Open-source font licenses are included beside the local font files.
+`/categories/`, `/archive/` and `/blog/` share an automatically generated category/tag index and chronological timeline. Counts and filtered article lists are calculated at build time using Liquid, compatible with GitHub Pages without custom plugins.
+
+Explicit post metadata takes priority. When a category is absent, ordered title and tag rules in `_data/taxonomy.yml` select a category, falling back to 随笔. When tags are absent, keyword rules extract tags from the title and description. This is deterministic keyword matching; new topics can be supported by adding rules or explicit metadata. Existing post URLs and `/tag/?tag=...` links are retained.

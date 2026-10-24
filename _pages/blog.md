@@ -1,9 +1,8 @@
 ---
-title: 文章
-eyebrow: "TERMINUS LOG / WRITING"
+title: 归档
 layout: menu-page
 permalink: /blog/
-description: "按时间排列的文章，不设固定主题。"
+description: "按分类、标签和时间，翻阅端点星日志的全部文章。"
 ---
 
-{% include post-list.html %}
+{% include archive-hub.html %}
