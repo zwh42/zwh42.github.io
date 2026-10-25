@@ -19,10 +19,6 @@ layout: default
       {% if page.toc %}<details class="article-toc"><summary>文章目录</summary><nav aria-label="文章目录">{% include toc.html html=content sanitize=true h_min=2 h_max=3 skip_no_ids=true %}</nav></details>{% endif %}
       <div class="prose article-body" itemprop="articleBody">{{ content }}</div>
       <footer class="post-end"><a href="{{ '/categories/' | relative_url }}">← 返回归档</a><a href="{{ '/feed.xml' | relative_url }}">订阅 RSS ↗</a></footer>
-      <nav class="post-pagination" aria-label="相邻文章">
-        <div>{% if page.previous %}<span>上一篇</span><a rel="prev" href="{{ page.previous.url | relative_url }}">{{ page.previous.title | escape }}</a>{% endif %}</div>
-        <div>{% if page.next %}<span>下一篇</span><a rel="next" href="{{ page.next.url | relative_url }}">{{ page.next.title | escape }}</a>{% endif %}</div>
-      </nav>
       {% include comments.html %}
     </article>
   </main>

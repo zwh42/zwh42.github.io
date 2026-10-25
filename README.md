@@ -22,7 +22,7 @@ Use [`docs/post-template.md`](docs/post-template.md) when creating new posts.
 
 ## Computational lithography series
 
-The fourteen revised articles are organized by the [reading guide](https://zwh42.github.io/lithography/). Each article contains numbered source citations and figure credits. Third-party image sources, reuse licenses, changes and checksums are listed in [the image provenance record](assets/images/references/README.md). Research verification notes are kept in `docs/research/` (excluded from the published site).
+Each of the fourteen articles is self-contained, with its own definitions, derivations, numbered source citations and figure credits. Articles do not depend on a reading order or cite other posts on this site. Third-party image sources, reuse licenses, changes and checksums are listed in [the image provenance record](assets/images/references/README.md). Research verification notes are kept in `docs/research/` (excluded from the published site).
 
 ## License
 

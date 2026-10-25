@@ -35,6 +35,7 @@ end
 puts "PASS: #{fixtures.size} metadata inference/override cases"
 
 posts = JSON.parse(File.read(File.join(root, 'search.json')))
+post_paths = posts.map { |post| post['url'] }
 check(posts.size == Dir[File.join(source, '_posts/*')].size, 'search index contains every post')
 check(posts.all? { |post| post['categories'].is_a?(Array) && !post['categories'].empty? && post['tags'].is_a?(Array) }, 'metadata arrays in search index')
 categories = posts.flat_map { |post| post['categories'] }.tally
@@ -65,7 +66,7 @@ end
 end
 puts "PASS: #{posts.size} posts, #{categories.size} categories, #{tags.size} tags; counts, groups and timelines agree"
 
-routes = ['/', '/categories/', '/archive/', '/blog/', '/tags/', '/tag/', '/category/', '/about/', '/portfolio/', '/lithography/', '/404.html']
+routes = ['/', '/categories/', '/archive/', '/blog/', '/tags/', '/tag/', '/category/', '/about/', '/portfolio/', '/404.html']
 home_pages = Dir[File.join(root, 'page*/index.html')]
 routes += home_pages.map { |path| path.delete_prefix(root).delete_suffix('index.html') }
 routes += posts.map { |post| post['url'] }
@@ -99,6 +100,13 @@ end
 figure_count = 0
 posts.each do |post|
   doc = Nokogiri::HTML(File.read(File.join(root, post['url'])))
+  check(!doc.text.include?('计算光刻阅读路线') && !doc.text.include?('系列阅读'), "no reading-route prompts on #{post['url']}")
+  doc.css('article a[href]').each do |link|
+    next if link['href'].start_with?('#')
+    url = URI(link['href'])
+    next if url.host && url.host != 'zwh42.github.io'
+    check(!post_paths.include?(url.path) || url.path == post['url'], "article is free of cross-post links: #{post['url']} -> #{link['href']}")
+  end
   doc.css('.article-body img').each do |image|
     entry = image_sources[image['src']]
     check(entry, "image has a provenance record on #{post['url']}: #{image['src']}")
@@ -111,4 +119,5 @@ posts.each do |post|
     figure_count += 1
   end
 end
+puts "PASS: #{posts.size} posts omit reading-route prompts and cross-post links"
 puts "PASS: #{figure_count} figures have source links, reuse licenses and unchanged source-image hashes"

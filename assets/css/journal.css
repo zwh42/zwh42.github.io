@@ -128,10 +128,6 @@ a:hover { color: var(--color-accent); }
 .article-body > p:first-of-type { margin-top: 0; }
 .post-cover { margin-bottom: 28px; border-radius: var(--radius-card); }
 .post-end { display: flex; justify-content: space-between; gap: 16px; margin-top: 48px; border-top: 1px dashed var(--color-rule); padding-top: 24px; color: var(--color-accent); font-size: .8125rem; }
-.post-pagination { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; margin-top: 28px; font-size: .8125rem; }
-.post-pagination > div:last-child { text-align: right; }
-.post-pagination span { display: block; font-size: .6875rem; color: var(--color-muted); margin-bottom: 6px; }
-.post-pagination a { display: block; overflow-wrap: anywhere; }
 .project-spec { margin-block: 28px; font-size: .875rem; }
 .project-spec > div { display: grid; grid-template-columns: 100px minmax(0, 1fr); gap: 20px; padding-block: 14px; border-bottom: 1px dashed var(--color-rule); }
 .project-spec dt { color: var(--color-muted); }
@@ -192,7 +188,6 @@ kbd { font-family: var(--font-code); }
   .equation-block { margin-block: 24px; }
   .prose h2 { font-size: 1.1875rem; margin-top: 36px; }
   .prose pre { padding: 14px; }
-  .post-pagination { gap: 20px; }
   .site-footer { margin-top: 48px; }
 }
 @media (max-width: 359px) {
